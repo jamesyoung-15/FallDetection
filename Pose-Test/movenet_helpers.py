@@ -1,14 +1,7 @@
 import cv2
+import copy
 
-
-def draw_debug(
-    image,
-    keypoint_score_th,
-    keypoints_list,
-    scores_list,
-    bbox_score_th,
-    bbox_list,
-):
+def draw_debug(image, keypoint_score_th, keypoints_list, scores_list, bbox_score_th, bbox_list):
     debug_image = copy.deepcopy(image)
 
     # 0:鼻 1:左目 2:右目 3:左耳 4:右耳 5:左肩 6:右肩 7:左肘 8:右肘 # 9:左手首

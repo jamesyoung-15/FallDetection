@@ -22,83 +22,47 @@ def get_args():
     return args
 
 
-def movenet(interpreter, input_image):
-    """Runs detection on an input image.
-
-    Args:
-      input_image: A [1, height, width, 3] tensor represents the input image
-        pixels. Note that the height/width should already be resized and match the
-        expected input resolution of the model before passing into this function.
-
-    Returns:
-      A [1, 1, 17, 3] float numpy array representing the predicted keypoint
-      coordinates and scores.
-    """
-    # TF Lite format expects tensor type of uint8.
-    input_image = tf.cast(input_image, dtype=tf.uint8)
+def run_inference_tflite(interpreter, input_size, image, use_tflite):
+    input_image = tf.cast(image, dtype=tf.uint8)  
+    # Get input and output tensors.
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
     interpreter.set_tensor(input_details[0]['index'], input_image.numpy())
-    # Invoke inference.
     interpreter.invoke()
-    # Get the model prediction.
-    keypoints_with_scores = interpreter.get_tensor(output_details[0]['index'])
-    return keypoints_with_scores
 
-def keypoints_and_edges_for_display(keypoints_with_scores,
-                                     height,
-                                     width,
-                                     keypoint_threshold=0.4):
-  """Returns high confidence keypoints and edges for visualization.
+    outputs = interpreter.get_tensor(output_details[0]['index'])
+    print(outputs)
+    # 
+    keypoints_list, scores_list = [], []
+    bbox_list = []
+    for keypoints_with_score in keypoints_with_scores:
+        keypoints = []
+        scores = []
+        # 
+        for index in range(17):
+            keypoint_x = int(image_width *
+                             keypoints_with_score[(index * 3) + 1])
+            keypoint_y = int(image_height *
+                             keypoints_with_score[(index * 3) + 0])
+            score = keypoints_with_score[(index * 3) + 2]
 
-  Args:
-    keypoints_with_scores: A numpy array with shape [1, 1, 17, 3] representing
-      the keypoint coordinates and scores returned from the MoveNet model.
-    height: height of the image in pixels.
-    width: width of the image in pixels.
-    keypoint_threshold: minimum confidence score for a keypoint to be
-      visualized.
+            keypoints.append([keypoint_x, keypoint_y])
+            scores.append(score)
 
-  Returns:
-    A (keypoints_xy, edges_xy, edge_colors) containing:
-      * the coordinates of all keypoints of all detected entities;
-      * the coordinates of all skeleton edges of all detected entities;
-      * the colors in which the edges should be plotted.
-  """
-  keypoints_all = []
-  keypoint_edges_all = []
-  edge_colors = []
-  num_instances, _, _, _ = keypoints_with_scores.shape
-  for idx in range(num_instances):
-    kpts_x = keypoints_with_scores[0, idx, :, 1]
-    kpts_y = keypoints_with_scores[0, idx, :, 0]
-    kpts_scores = keypoints_with_scores[0, idx, :, 2]
-    kpts_absolute_xy = np.stack(
-        [width * np.array(kpts_x), height * np.array(kpts_y)], axis=-1)
-    kpts_above_thresh_absolute = kpts_absolute_xy[
-        kpts_scores > keypoint_threshold, :]
-    keypoints_all.append(kpts_above_thresh_absolute)
+        # 
+        bbox_ymin = int(image_height * keypoints_with_score[51])
+        bbox_xmin = int(image_width * keypoints_with_score[52])
+        bbox_ymax = int(image_height * keypoints_with_score[53])
+        bbox_xmax = int(image_width * keypoints_with_score[54])
+        bbox_score = keypoints_with_score[55]
 
-    for edge_pair, color in KEYPOINT_EDGE_INDS_TO_COLOR.items():
-      if (kpts_scores[edge_pair[0]] > keypoint_threshold and
-          kpts_scores[edge_pair[1]] > keypoint_threshold):
-        x_start = kpts_absolute_xy[edge_pair[0], 0]
-        y_start = kpts_absolute_xy[edge_pair[0], 1]
-        x_end = kpts_absolute_xy[edge_pair[1], 0]
-        y_end = kpts_absolute_xy[edge_pair[1], 1]
-        line_seg = np.array([[x_start, y_start], [x_end, y_end]])
-        keypoint_edges_all.append(line_seg)
-        edge_colors.append(color)
-  if keypoints_all:
-    keypoints_xy = np.concatenate(keypoints_all, axis=0)
-  else:
-    keypoints_xy = np.zeros((0, 17, 2))
+        # 6人分のデータ格納用のリストに追加
+        keypoints_list.append(keypoints)
+        scores_list.append(scores)
+        bbox_list.append(
+            [bbox_xmin, bbox_ymin, bbox_xmax, bbox_ymax, bbox_score])
 
-  if keypoint_edges_all:
-    edges_xy = np.stack(keypoint_edges_all, axis=0)
-  else:
-    edges_xy = np.zeros((0, 2, 2))
-  return keypoints_xy, edges_xy, edge_colors
+    return keypoints_list, scores_list, bbox_list
 
 
 def main():
@@ -117,7 +81,6 @@ def main():
     interpreter.allocate_tensors()
 
 
-
     # setup video capture
     cap = cv2.VideoCapture(media_source)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, cap_width)
@@ -130,15 +93,17 @@ def main():
         ret, frame = cap.read()
         if not ret:
             break
+
+        
         # Resize and pad the image to keep the aspect ratio and fit the expected size.
         input_image = tf.expand_dims(frame, axis=0)
         input_image = tf.image.resize_with_pad(input_image, input_size, input_size)
 
-        # run inference
-        keypoints_with_scores =  movenet(interpreter, input_image)
 
-        keypoints_xy, edges_xy, edge_colors = keypoints_and_edges_for_display(keypoints_with_scores, frame.shape[1], frame.shape[0])
-        print(f'{keypoints_xy}, {edges_xy}, {edge_colors}')
+        # run inference
+        keypoints_list, scores_list, bbox_list =  run_inference_tflite(interpreter, input_size, input_image, use_tflite=True)
+        print(keypoints_list)
+        
         # fps track
         currentTime = time.time()
         fps = 1/(currentTime-prevtime)

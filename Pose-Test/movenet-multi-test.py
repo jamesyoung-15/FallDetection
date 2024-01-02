@@ -42,7 +42,7 @@ def run_inference(model, input_size, image):
     outputs = model(input_image)
 
     keypoints_with_scores = outputs['output_0'].numpy()
-    print(keypoints_with_scores)
+    # print(keypoints_with_scores)
     keypoints_with_scores = np.squeeze(keypoints_with_scores)
 
     # キーポイント、バウンディングボックス、スコア取り出し
@@ -124,6 +124,7 @@ def main():
             input_size,
             frame,
         )
+        print(keypoints_list)
 
         # elapsed_time = time.time() - start_time
         elapsed_time = 0

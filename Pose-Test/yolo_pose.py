@@ -15,4 +15,4 @@ to_show = args.show
 model = YOLO("yolo-weights/yolov8n-pose.pt")
 
 # run predict
-results = model(source=2, show=bool(int(to_show)))
+results = model(source=args.video, show=bool(int(to_show)))
