@@ -58,3 +58,7 @@ Seems like Movenet or Yolo V8 most suitable as it supports multi-person pose det
 |RIGHT_KNEE|     14|
 |LEFT_ANKLE|     15|
 |RIGHT_ANKLE|    16|
+
+
+## Resources
+https://github.com/Kazuhito00/MoveNet-Python-Example/tree/main
