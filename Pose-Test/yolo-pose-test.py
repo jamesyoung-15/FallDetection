@@ -22,8 +22,6 @@ cap = cv2.VideoCapture(vid_source)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
 
-prev_time = 0
-
 KEYPOINT_DICT = {
     'nose': 0,
     'left_eye': 1,
@@ -47,7 +45,9 @@ KEYPOINT_DICT = {
 prev_data = [None]*2
 print(prev_data)
 
-interval = 1
+prev_time = 0
+interval = 0.5
+prev_time_fps = 0
 
 while True:
     ret, frame = cap.read()
@@ -76,8 +76,12 @@ while True:
                         keypoint = keypts.xy[i, index]
                         x, y = int(keypoint[0].item()), int(keypoint[1].item())
                         cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
+                        
     
+    fps = 1/(curr_time-prev_time_fps)
+    cv2.putText(frame, str(int(fps)), (50,50),  cv2.FONT_HERSHEY_PLAIN,3,(255,0,0),3)
     cv2.imshow('Yolo Pose Test', frame)
+    prev_time_fps = curr_time
     key = cv2.waitKey(1)
     if key == 27:  # ESC
         break
