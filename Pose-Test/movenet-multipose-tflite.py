@@ -178,7 +178,7 @@ def draw_detections(image, keypoint_score_th, keypoints_list, scores_list, bbox_
     # 0:nose 1:left eye 2:右目 3:左耳 4:右耳 5:左肩 6:右肩 7:左肘 8:右肘 # 9:左手首
     # 10:右手首 11:左股関節 12:右股関節 13:左ひざ 14:右ひざ 15:左足首 16:右足首
     for keypoints, scores in zip(keypoints_list, scores_list):
-        # Line：鼻 → 左目
+        # draw line from nose to left eye
         index01, index02 = 0, 1
         if scores[index01] > keypoint_score_th and scores[
                 index02] > keypoint_score_th:
@@ -186,7 +186,7 @@ def draw_detections(image, keypoint_score_th, keypoints_list, scores_list, bbox_
             point02 = keypoints[index02]
             cv2.line(display_image, point01, point02, (255, 255, 255), 4)
             cv2.line(display_image, point01, point02, (0, 0, 0), 2)
-        # Line：鼻 → 右目
+        # draw line from nose to right eye
         index01, index02 = 0, 2
         if scores[index01] > keypoint_score_th and scores[
                 index02] > keypoint_score_th:
@@ -194,7 +194,7 @@ def draw_detections(image, keypoint_score_th, keypoints_list, scores_list, bbox_
             point02 = keypoints[index02]
             cv2.line(display_image, point01, point02, (255, 255, 255), 4)
             cv2.line(display_image, point01, point02, (0, 0, 0), 2)
-        # Line：左目 → 左耳
+        # draw line from left eye to left ear
         index01, index02 = 1, 3
         if scores[index01] > keypoint_score_th and scores[
                 index02] > keypoint_score_th:
@@ -202,7 +202,7 @@ def draw_detections(image, keypoint_score_th, keypoints_list, scores_list, bbox_
             point02 = keypoints[index02]
             cv2.line(display_image, point01, point02, (255, 255, 255), 4)
             cv2.line(display_image, point01, point02, (0, 0, 0), 2)
-        # Line：右目 → 右耳
+        # draw line from right eye to right ear
         index01, index02 = 2, 4
         if scores[index01] > keypoint_score_th and scores[
                 index02] > keypoint_score_th:
@@ -210,7 +210,7 @@ def draw_detections(image, keypoint_score_th, keypoints_list, scores_list, bbox_
             point02 = keypoints[index02]
             cv2.line(display_image, point01, point02, (255, 255, 255), 4)
             cv2.line(display_image, point01, point02, (0, 0, 0), 2)
-        # Line：鼻 → 左肩
+        # draw line from nose to left shoulder
         index01, index02 = 0, 5
         if scores[index01] > keypoint_score_th and scores[
                 index02] > keypoint_score_th:
@@ -218,7 +218,7 @@ def draw_detections(image, keypoint_score_th, keypoints_list, scores_list, bbox_
             point02 = keypoints[index02]
             cv2.line(display_image, point01, point02, (255, 255, 255), 4)
             cv2.line(display_image, point01, point02, (0, 0, 0), 2)
-        # Line：鼻 → 右肩
+        # draw line from nose to right shoulder
         index01, index02 = 0, 6
         if scores[index01] > keypoint_score_th and scores[
                 index02] > keypoint_score_th:
@@ -226,7 +226,7 @@ def draw_detections(image, keypoint_score_th, keypoints_list, scores_list, bbox_
             point02 = keypoints[index02]
             cv2.line(display_image, point01, point02, (255, 255, 255), 4)
             cv2.line(display_image, point01, point02, (0, 0, 0), 2)
-        # Line：左肩 → 右肩
+        # draw line from left shoulder to right shoulder
         index01, index02 = 5, 6
         if scores[index01] > keypoint_score_th and scores[
                 index02] > keypoint_score_th:
@@ -234,7 +234,7 @@ def draw_detections(image, keypoint_score_th, keypoints_list, scores_list, bbox_
             point02 = keypoints[index02]
             cv2.line(display_image, point01, point02, (255, 255, 255), 4)
             cv2.line(display_image, point01, point02, (0, 0, 0), 2)
-        # Line：左肩 → 左肘
+        # draw line from left shoulder to left elbow
         index01, index02 = 5, 7
         if scores[index01] > keypoint_score_th and scores[
                 index02] > keypoint_score_th:
@@ -242,7 +242,7 @@ def draw_detections(image, keypoint_score_th, keypoints_list, scores_list, bbox_
             point02 = keypoints[index02]
             cv2.line(display_image, point01, point02, (255, 255, 255), 4)
             cv2.line(display_image, point01, point02, (0, 0, 0), 2)
-        # Line：左肘 → 左手首
+        # draw line from right shoulder to right elbow
         index01, index02 = 7, 9
         if scores[index01] > keypoint_score_th and scores[
                 index02] > keypoint_score_th:
@@ -266,7 +266,7 @@ def draw_detections(image, keypoint_score_th, keypoints_list, scores_list, bbox_
             point02 = keypoints[index02]
             cv2.line(display_image, point01, point02, (255, 255, 255), 4)
             cv2.line(display_image, point01, point02, (0, 0, 0), 2)
-        # Line：左股関節 → 右股関節
+        # draw line from left hip to right hip
         index01, index02 = 11, 12
         if scores[index01] > keypoint_score_th and scores[
                 index02] > keypoint_score_th:
@@ -274,7 +274,7 @@ def draw_detections(image, keypoint_score_th, keypoints_list, scores_list, bbox_
             point02 = keypoints[index02]
             cv2.line(display_image, point01, point02, (255, 255, 255), 4)
             cv2.line(display_image, point01, point02, (0, 0, 0), 2)
-        # Line：左肩 → 左股関節
+        # draw line from left shoulder to left hip
         index01, index02 = 5, 11
         if scores[index01] > keypoint_score_th and scores[
                 index02] > keypoint_score_th:
@@ -282,7 +282,7 @@ def draw_detections(image, keypoint_score_th, keypoints_list, scores_list, bbox_
             point02 = keypoints[index02]
             cv2.line(display_image, point01, point02, (255, 255, 255), 4)
             cv2.line(display_image, point01, point02, (0, 0, 0), 2)
-        # Line：左股関節 → 左ひざ
+        # draw line from left hip to left knee
         index01, index02 = 11, 13
         if scores[index01] > keypoint_score_th and scores[
                 index02] > keypoint_score_th:
@@ -290,7 +290,7 @@ def draw_detections(image, keypoint_score_th, keypoints_list, scores_list, bbox_
             point02 = keypoints[index02]
             cv2.line(display_image, point01, point02, (255, 255, 255), 4)
             cv2.line(display_image, point01, point02, (0, 0, 0), 2)
-        # Line：左ひざ → 左足首
+        # draw line from left knee to left ankle
         index01, index02 = 13, 15
         if scores[index01] > keypoint_score_th and scores[
                 index02] > keypoint_score_th:
@@ -298,7 +298,7 @@ def draw_detections(image, keypoint_score_th, keypoints_list, scores_list, bbox_
             point02 = keypoints[index02]
             cv2.line(display_image, point01, point02, (255, 255, 255), 4)
             cv2.line(display_image, point01, point02, (0, 0, 0), 2)
-        # Line：右肩 → 右股関節
+        # draw line from right shoulder to right hip
         index01, index02 = 6, 12
         if scores[index01] > keypoint_score_th and scores[
                 index02] > keypoint_score_th:
@@ -306,7 +306,7 @@ def draw_detections(image, keypoint_score_th, keypoints_list, scores_list, bbox_
             point02 = keypoints[index02]
             cv2.line(display_image, point01, point02, (255, 255, 255), 4)
             cv2.line(display_image, point01, point02, (0, 0, 0), 2)
-        # Line：右股関節 → 右ひざ
+        # draw line from right hip to right knee
         index01, index02 = 12, 14
         if scores[index01] > keypoint_score_th and scores[
                 index02] > keypoint_score_th:
