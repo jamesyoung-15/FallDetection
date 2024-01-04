@@ -53,7 +53,8 @@ def main():
             prev_time = curr_time
             
             # inference
-            results = model.predict(frame, imgsz=640, conf=0.5, verbose=False)
+            # results = model.predict(frame, imgsz=640, conf=0.5, verbose=False)
+            results = model.track(frame, imgsz=640, conf=0.5, verbose=False, tracker="bytetrack.yaml")
             # get data from inference
             for result in results:
                 keypts = result.keypoints
