@@ -150,8 +150,8 @@ def main():
         prevtime = currentTime
 
         # draw detections to frame
+        i = 0
         for keypts, scores in zip(keypoints_list, scores_list):
-            i = 1
             left_shoulder = get_xy(scores, keypts, 'left_shoulder', conf_threshold)
             right_shoulder = get_xy(scores, keypts, 'right_shoulder', conf_threshold)
             left_hip = get_xy(scores, keypts, 'left_hip', conf_threshold)
