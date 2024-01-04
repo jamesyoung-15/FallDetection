@@ -10,6 +10,7 @@ def get_args():
     parser.add_argument("--width", help='cap width', type=int, default=640)
     parser.add_argument("--height", help='cap height', type=int, default=480)
     parser.add_argument("--conf_score", type=float, default=0.4)
+    parser.add_argument("--interval", type=float, default=0)
 
     args = parser.parse_args()
     return args

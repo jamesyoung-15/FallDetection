@@ -45,7 +45,7 @@ def main():
     prev_data = [None]
 
     prev_time = 0
-    interval = 0
+    interval = args.interval
     prev_time_fps = 0
 
     while True:
@@ -81,6 +81,8 @@ def main():
                             frame = draw_keypoint(frame, hips)
                         if knees!=(0,0):
                             frame = draw_keypoint(frame, knees)
+                        
+                        
                     
 
                         # for index in KEYPOINT_DICT.values():
