@@ -83,15 +83,15 @@ def main():
                         # if relevant keypt exist draw pt
                         if shoulder!=(0,0):
                             shoulder_exist = True
-                            frame = utils.draw_keypoint(frame, shoulder)
+                            utils.draw_keypoint(frame, shoulder)
                             # print(f'Shoulder: {shoulder}')
                         if hips!=(0,0):
                             hips_exist = True
-                            frame = utils.draw_keypoint(frame, hips)
+                            utils.draw_keypoint(frame, hips)
                             # print(f'Hips: {hips}')
                         if knees!=(0,0):
                             knees_exist = True
-                            frame = utils.draw_keypoint(frame, knees)
+                            utils.draw_keypoint(frame, knees)
                             # print(f'Knees: {knees}')
                             
                         # if keypts exist draw line to connect them, calculate vector
@@ -117,11 +117,13 @@ def main():
                         if shoulder_exist and hips_exist and knees_exist:
                             spine_leg_theta = utils.angle_between(spine_vector, legs_vector)
                             hips_x_axis = utils.calculate_vector(hips, (hips[0]+20, hips[1]))
+                            hips_y_axis = utils.calculate_vector(hips, (hips[0], hips[1]+20))
                             # utils.draw_vector(frame, hips, hips_x_axis, color=(255,255,255))
                             # spine_x_axis_phi = utils.calculate_angle_with_x_axis(spine_vector)
                             spine_x_axis_phi = utils.angle_between(spine_vector, hips_x_axis)
-                            print(f'Theta: {spine_leg_theta}, Phi: {spine_x_axis_phi}')
-                            state = utils.action_state(spine_leg_theta, spine_x_axis_phi)
+                            legs_y_axis_alpha = utils.angle_between(legs_vector, hips_y_axis)
+                            print(f'Theta: {spine_leg_theta}, Phi: {spine_x_axis_phi}, Alpha: {legs_y_axis_alpha}')
+                            state = utils.action_state(spine_leg_theta, spine_x_axis_phi, legs_y_axis_alpha)
                             print(f'State: {state}')
 
                             
@@ -133,8 +135,14 @@ def main():
             cv2.imshow('Yolo Pose Test', frame)
         prev_time_fps = curr_time
         key = cv2.waitKey(1)
+        manual_move = False
+        if manual_move:
+            key = cv2.waitKey(0)
+            if key == ord("n"):
+                continue
         if key == 27:  # ESC
             break
+        
     cap.release()
     cv2.destroyAllWindows()
     

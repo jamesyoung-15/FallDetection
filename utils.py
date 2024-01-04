@@ -39,13 +39,14 @@ def angle_between(v1, v2):
 
 def draw_keypoint(image, keypoint):
     """ Takes image and keypoint to use OpenCV to draw pose keypoints on image and returns annotated image. """
-    return cv2.circle(image, (keypoint[0], keypoint[1]), 5, (0, 255, 0), -1)
+    cv2.circle(image, (keypoint[0], keypoint[1]), 5, (0, 255, 0), -1)
 
 def draw_keypoint_line(image, keypoint1, keypoint2):
     """ Draws line between two keypoints onto image and returns annotated image. """
-    return cv2.line(image, keypoint1, keypoint2, (255, 255, 255), 4)
+    cv2.line(image, keypoint1, keypoint2, (255, 255, 255), 4)
 
 def draw_vector(image, start_point, vector, color=(255, 255, 255), thickness=4):
+    """ Draws vector to image with OpenCV line. Takes in starting point, vector, and image to draw on.   """
     end_point = tuple(np.array(start_point) + np.array(vector))
     cv2.line(image, tuple(start_point), end_point, color, thickness)
 
@@ -63,37 +64,28 @@ def get_mainpoint(left, right, part):
         shoulder = right
     return main_point
 
-def calculate_angle_with_x_axis(vector):
-    x, y = vector
-    angle_rad = math.atan2(y, x)
-    angle_deg = math.degrees(angle_rad)
-    return angle_deg
 
 def calculate_vector(point1, point2):
+    """ Returns 2D vector between two points (x,y). """
     x1, y1 = point1
     x2, y2 = point2
     vector_x = x2 - x1
     vector_y = y2 - y1
     return (vector_x, vector_y)
 
-def calculate_angle(keypoint1, keypoint2):
-    x1, y1 = keypoint1
-    x2, y2 = keypoint2
-    angle_rad = math.atan2(y2 - y1, x2 - x1)
-    angle_deg = math.degrees(angle_rad)
-    return angle_deg
 
-def action_state(spine_leg_theta, spine_x_axis_phi):
+def action_state(theta, phi, alpha):
+    """ Test some conditions to determine action state. Still trying out """
     # check angle validity (should be 0/positive)
-    if spine_leg_theta > -1 and spine_x_axis_phi > -1:
+    if theta > -1 and phi > -1:
         # stand
-        if spine_leg_theta>120 and spine_x_axis_phi>25:
+        if theta>120 and phi>25:
             return "standing"
         # sit
-        elif spine_leg_theta<120 and spine_x_axis_phi>25:
+        elif theta<120 and phi>25:
             return "sitting"
         # lying down
-        elif spine_x_axis_phi<=25:
+        elif phi<=25 and alpha>70:
             return "lying down"
         # others?
     else:

@@ -39,11 +39,11 @@ def angle_between(v1, v2):
 
 def draw_keypoint(image, keypoint):
     """ Takes image and keypoint to use OpenCV to draw pose keypoints on image and returns annotated image. """
-    return cv2.circle(image, (keypoint[0], keypoint[1]), 5, (0, 255, 0), -1)
+    cv2.circle(image, (keypoint[0], keypoint[1]), 5, (0, 255, 0), -1)
 
 def draw_keypoint_line(image, keypoint1, keypoint2):
     """ Draws line between two keypoints onto image and returns annotated image. """
-    return cv2.line(image, keypoint1, keypoint2, (255, 255, 255), 4)
+    cv2.line(image, keypoint1, keypoint2, (255, 255, 255), 4)
 
 def draw_vector(image, start_point, vector, color=(255, 255, 255), thickness=4):
     end_point = tuple(np.array(start_point) + np.array(vector))
