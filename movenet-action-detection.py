@@ -151,6 +151,7 @@ def main():
 
         # draw detections to frame
         for keypts, scores in zip(keypoints_list, scores_list):
+            i = 1
             left_shoulder = get_xy(scores, keypts, 'left_shoulder', conf_threshold)
             right_shoulder = get_xy(scores, keypts, 'right_shoulder', conf_threshold)
             left_hip = get_xy(scores, keypts, 'left_hip', conf_threshold)
@@ -210,6 +211,7 @@ def main():
                 print(f'Theta: {spine_leg_theta}, Phi: {spine_x_axis_phi}, Alpha: {legs_y_axis_alpha}')
                 state = utils.action_state(spine_leg_theta, spine_x_axis_phi, legs_y_axis_alpha)
                 print(f'State: {state}')
+                i += 1
             
         # display frame
         cv2.imshow("Image",frame)
