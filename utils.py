@@ -15,6 +15,7 @@ def get_args():
     parser.add_argument("--height", type=int, default=480, help="Input video height")
     parser.add_argument("--conf_score", type=float, default=0.4)
     parser.add_argument("--interval", type=float, default=0, help="Interval in seconds to run inference eg. 2")
+    parser.add_argument("--manual_frame", type=float, default=0, help="If this option is set to 1 you need to press n key to advance frame")
 
     args = parser.parse_args()
     return args
@@ -78,15 +79,21 @@ def action_state(theta, phi, alpha):
     """ Test some conditions to determine action state. Still trying out """
     # check angle validity (should be 0/positive)
     if theta > -1 and phi > -1:
-        # stand
+        # legs basically level with ground
+        if alpha>80 and theta>150:
+            return "lying down"
+        elif alpha>80 and theta<150:
+            return "sitting"
+        # spine and leg further apart and spine far from ground
         if theta>120 and phi>25:
             return "standing"
-        # sit
+        # spine and leg further apart and spine far from ground
         elif theta<120 and phi>25:
             return "sitting"
         # lying down
         elif phi<=25 and alpha>70:
             return "lying down"
+        
         # others?
     else:
         raise Exception("invalid theta/phi angles")

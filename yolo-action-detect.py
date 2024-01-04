@@ -20,6 +20,7 @@ def main():
     args = utils.get_args()
     vid_source = args.src
     show_frame = args.show
+    manual_move = bool(int(args.manual_frame))
     # load pretrained model
     model = YOLO("yolo-weights/yolov8n-pose.pt")
 
@@ -63,7 +64,7 @@ def main():
                 # if keypts detected
                 if num_pts !=0:
                     # for each person
-                    for i in range(1):
+                    for i in range(num_people):
                         # extract relevant keypts
                         left_shoulder = get_xy(keypts.xy[i, my_defs.KEYPOINT_DICT['left_shoulder']])
                         right_shoulder = get_xy(keypts.xy[i, my_defs.KEYPOINT_DICT['right_shoulder']])
@@ -122,7 +123,8 @@ def main():
                             # spine_x_axis_phi = utils.calculate_angle_with_x_axis(spine_vector)
                             spine_x_axis_phi = utils.angle_between(spine_vector, hips_x_axis)
                             legs_y_axis_alpha = utils.angle_between(legs_vector, hips_y_axis)
-                            print(f'Theta: {spine_leg_theta}, Phi: {spine_x_axis_phi}, Alpha: {legs_y_axis_alpha}')
+                            print(f'Person {i+1}')
+                            print(f'Theta {spine_leg_theta}, Phi: {spine_x_axis_phi}, Alpha: {legs_y_axis_alpha}')
                             state = utils.action_state(spine_leg_theta, spine_x_axis_phi, legs_y_axis_alpha)
                             print(f'State: {state}')
 
@@ -135,7 +137,6 @@ def main():
             cv2.imshow('Yolo Pose Test', frame)
         prev_time_fps = curr_time
         key = cv2.waitKey(1)
-        manual_move = False
         if manual_move:
             key = cv2.waitKey(0)
             if key == ord("n"):
