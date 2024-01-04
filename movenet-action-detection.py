@@ -206,6 +206,7 @@ def main():
                 # spine_x_axis_phi = utils.calculate_angle_with_x_axis(spine_vector)
                 spine_x_axis_phi = utils.angle_between(spine_vector, hips_x_axis)
                 legs_y_axis_alpha = utils.angle_between(legs_vector, hips_y_axis)
+                print(f'Person {i+1}')
                 print(f'Theta: {spine_leg_theta}, Phi: {spine_x_axis_phi}, Alpha: {legs_y_axis_alpha}')
                 state = utils.action_state(spine_leg_theta, spine_x_axis_phi, legs_y_axis_alpha)
                 print(f'State: {state}')
