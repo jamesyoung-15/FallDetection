@@ -18,3 +18,5 @@ KEYPOINT_DICT = {
     'left_ankle': 15,
     'right_ankle': 16
 }
+
+IMPORTANT_PTS = ['left_shoulder', 'right_shoulder', 'left_hip', 'right_hip', 'left_knee', 'right_knee']

@@ -1,3 +1,13 @@
+# Notes
+My notes.
+
+## Progress
+
+- [] 
+- []
+- 
+
+
 ## Approaches
 1. Use pose estimation w/ heuristics
     - pros:
@@ -22,3 +32,8 @@
         - problem is not many public/reputable dataset, won't be robust
 
 4. Combine some of the above methods (eg. pose estimate + classification).
+
+## Quick Notes
+- Mike said that using image classification better than pose estimate
+- Vincent said rather than combining inference and camera stream in one task, can split into two 
+    - If inference takes too long, can put pending
