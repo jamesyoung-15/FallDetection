@@ -9,13 +9,13 @@ def get_args():
     """ Parse arguments. Returns user/default set arguments """
     parser = argparse.ArgumentParser(description="Pose estimate program")
     # user settings
-    parser.add_argument("--src", type=str, default='/dev/video0', help="Video file location eg. /dev/video0")
+    parser.add_argument("--src", type=str, default='/dev/video0', help="Video file location (eg. /dev/video0)")
     parser.add_argument("--show", type=int, default=1, help="Whether to show camera to screen, 0 to hide 1 to show.")
-    parser.add_argument("--width", type=int, default=640, help="Input video width.")
-    parser.add_argument("--height", type=int, default=480, help="Input video height")
-    parser.add_argument("--conf_score", type=float, default=0.4)
-    parser.add_argument("--interval", type=float, default=0, help="Interval in seconds to run inference eg. 2")
-    parser.add_argument("--manual_frame", type=float, default=0, help="If this option is set to 1 you need to press n key to advance frame")
+    parser.add_argument("--width", type=int, default=640, help="Input video width. (eg. 480)")
+    parser.add_argument("--height", type=int, default=480, help="Input video height (eg. 480)")
+    parser.add_argument("--conf_score", type=float, default=0.5, help="Confidence score threshold (eg. 0.7)")
+    parser.add_argument("--interval", type=float, default=0, help="Interval in seconds to run inference (eg. 2)")
+    parser.add_argument("--manual_frame", type=float, default=0, help="Set this to 1 if you want to press 'n' key to advance each video frame.")
 
     args = parser.parse_args()
     return args
@@ -51,18 +51,25 @@ def draw_vector(image, start_point, vector, color=(255, 255, 255), thickness=4):
     end_point = tuple(np.array(start_point) + np.array(vector))
     cv2.line(image, tuple(start_point), end_point, color, thickness)
 
-def get_mainpoint(left, right, part):
-    """ For each important part (eg. hip), if both left and right part exists, we get midpoint. If only left or right exist, then we set the point to left or right. """
+def get_mainpoint(left, right, left_conf_score, right_conf_score, conf_threshold=0.5, part="part"):
+    """ 
+    For each important part (eg. hip), if both left and right part exists and 
+    confidence score is past threshold, we get midpoint. 
+    
+    If only left or right exist, then we set the point to left or right. 
+    
+    Returns midpoint (x,y) coordinate
+    """
     main_point = (0,0)
-    if left != (0,0) and right != (0,0):
-        # print(f'both left and right {part} detected')
+    if left != (0,0) and right != (0,0) and left_conf_score>conf_threshold and right_conf_score>conf_threshold:
+        print(f'both left and right {part} detected')
         main_point = calculate_midpoint(left, right)
-    elif left != (0,0):
-        # print(f'only left {part} detected')
+    elif left != (0,0) and left_conf_score>conf_threshold:
+        print(f'only left {part} detected')
         main_point = left
-    elif right != (0,0):
-        # print(f'only right {part} detected')
-        shoulder = right
+    elif right != (0,0) and right_conf_score>conf_threshold:
+        print(f'only right {part} detected')
+        main_point = right
     return main_point
 
 
