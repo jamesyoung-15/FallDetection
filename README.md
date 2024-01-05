@@ -1,5 +1,5 @@
 # Simple Action Detection
-Project aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera input. Built for Raspberry Pi w/ camera.
+My internship project/mini-prototype that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera input. Prototype built for Raspberry Pi w/ camera.
 
 ## Usage
 ### Install Dependencies
@@ -33,7 +33,7 @@ There are many pose detection models available. Below are some I considered and 
 - Blazenet (from Mediapipe)
 - Yolo V8 Pose
 
-Seems like Movenet or Yolo V8 most suitable as it supports multi-person pose detection. Need further testing for performance and speed.
+Seems like Movenet or Yolo V8 most suitable as it supports multi-person pose detection. Movenet multi-pose lite is faster (~ 4 fps on RPI 4) but Yolo is more accurate. Will probably use Yolo and try to optimize further. 
 
 #### Movenet and Yolo Pose Keypoints
 

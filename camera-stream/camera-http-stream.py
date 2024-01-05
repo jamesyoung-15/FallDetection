@@ -1,10 +1,20 @@
 import cv2
 from flask import Flask, Response
+import utils
+
 
 app = Flask(__name__)
 
+args = utils.get_args()
+
+feed_src = args.src
+port = args.port
+
+
+print(args)
+
 def generate_frames():
-    camera = cv2.VideoCapture(0)  # Replace with the appropriate camera index if you have multiple cameras
+    camera = cv2.VideoCapture(feed_src)  # Replace with the appropriate camera index if you have multiple cameras
 
     while True:
         success, frame = camera.read()
@@ -27,4 +37,4 @@ def video_feed():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5005)
+    app.run(host='192.168.0.206', port=port)
