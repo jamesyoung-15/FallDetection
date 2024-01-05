@@ -2,10 +2,13 @@
 My notes.
 
 ## Progress
+### Completed
+- Setup Pose detection for MediaPipe (Blazenet), Movenet (multi and single), and Yolo Pose
+- Setup faster usb camera streaming with threading
+- Managed to extract pose keypoints and use them to make basic action detection
 
-- [] 
-- []
-- 
+### Todo
+- Further optimize
 
 
 ## Approaches
@@ -34,6 +37,10 @@ My notes.
 4. Combine some of the above methods (eg. pose estimate + classification).
 
 ## Quick Notes
-- Mike said that using image classification better than pose estimate
-- Vincent said rather than combining inference and camera stream in one task, can split into two 
-    - If inference takes too long, can put pending
+- On RPI Yolo pose getting >1 fps and is extremely choppy, need to further optimize
+- Movenet with TFlite is faster but pretty inaccurate
+
+- Improvements:
+    - Mike said that using image classification better than pose estimate
+    - Vincent said rather than combining inference and camera stream in one task, can split into two 
+        - If inference takes too long, can put pending

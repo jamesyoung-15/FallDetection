@@ -16,6 +16,7 @@ def get_args():
     parser.add_argument("--conf_score", type=float, default=0.5, help="Confidence score threshold (eg. 0.7)")
     parser.add_argument("--interval", type=float, default=0, help="Interval in seconds to run inference (eg. 2)")
     parser.add_argument("--manual_frame", type=float, default=0, help="Set this to 1 if you want to press 'n' key to advance each video frame.")
+    parser.add_argument("--type", type=int, default=0, help="Specifies whether input is image or video (0 for video 1 for image). Default is video (0).")
 
     args = parser.parse_args()
     return args

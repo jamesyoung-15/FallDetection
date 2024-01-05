@@ -9,13 +9,15 @@ def get_args():
     """ Parse arguments. Returns user/default set arguments """
     parser = argparse.ArgumentParser(description="Pose estimate program")
     # user settings
-    parser.add_argument("--src", type=str, default='/dev/video0', help="Video file location eg. /dev/video0")
+    parser.add_argument("--src", type=str, default='/dev/video0', help="Video file location (eg. /dev/video0)")
     parser.add_argument("--show", type=int, default=1, help="Whether to show camera to screen, 0 to hide 1 to show.")
     parser.add_argument("--width", type=int, default=640, help="Input video width.")
     parser.add_argument("--height", type=int, default=480, help="Input video height")
     parser.add_argument("--conf_score", type=float, default=0.4)
-    parser.add_argument("--interval", type=float, default=0, help="Interval in seconds to run inference eg. 2")
-
+    parser.add_argument("--interval", type=float, default=0, help="Interval in seconds to run inference (eg. 2)")
+    parser.add_argument("--type", type=int, default=0, help="Specifies whether input is image or video (0 for video 1 for image). Default is video (0).")
+    
+    
     args = parser.parse_args()
     return args
 
