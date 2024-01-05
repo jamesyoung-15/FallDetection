@@ -26,3 +26,7 @@ class USBCamStream:
 	def release(self):
 		""" Release the video stream. """
 		self.stream.release()
+  
+	def change_format(self):
+		""" Change the video stream format from YUYV to MJPG. """
+		self.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))

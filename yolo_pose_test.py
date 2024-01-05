@@ -41,6 +41,7 @@ def main():
     cap = USBCamStream(src=vid_source)
     cap.resize_stream(vid_width,vid_height)
     cap = cap.start()
+    cap.change_format()
 
     # array to store prev frame data for determining action
     prev_data = [None]
