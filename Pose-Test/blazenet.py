@@ -33,47 +33,6 @@ if __name__ == "__main__":
         # annotate pose landmarks to iamge, return landmark results
         frame, results = pose_obj.find_pose(frame)
         
-        # extract relevant landmarks for detection
-        visibility_threshold = 0.7
-        if results.pose_landmarks:
-             # neck
-            right_shoulder = results.pose_landmarks.landmark[14]
-            left_shoulder = results.pose_landmarks.landmark[11]
-            if right_shoulder.visibility>visibility_threshold and left_shoulder.visibility>visibility_threshold:
-                shoulder = right_shoulder
-            elif right_shoulder.visibility>visibility_threshold:
-                shoulder = right_shoulder
-            elif left_shoulder.visibility>visibility_threshold:
-                shoulder = left_shoulder
-            else:
-                shoulder = -1
-                
-            # hip
-            right_shoulder = results.pose_landmarks.landmark[14]
-            left_shoulder = results.pose_landmarks.landmark[11]
-            if right_shoulder.visibility>visibility_threshold and left_shoulder.visibility>visibility_threshold:
-                shoulder = right_shoulder
-            elif right_shoulder.visibility>visibility_threshold:
-                shoulder = right_shoulder
-            elif left_shoulder.visibility>visibility_threshold:
-                shoulder = left_shoulder
-            else:
-                shoulder = -1
-            
-            # knee
-            right_shoulder = results.pose_landmarks.landmark[14]
-            left_shoulder = results.pose_landmarks.landmark[11]
-            if right_shoulder.visibility>visibility_threshold and left_shoulder.visibility>visibility_threshold:
-                shoulder = right_shoulder
-            elif right_shoulder.visibility>visibility_threshold:
-                shoulder = right_shoulder
-            elif left_shoulder.visibility>visibility_threshold:
-                shoulder = left_shoulder
-            else:
-                shoulder = -1
-            
-            if shoulder!=-1:
-                print(shoulder)
             
         
             
