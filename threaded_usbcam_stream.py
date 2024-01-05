@@ -11,27 +11,33 @@ stream_width = args.width
 stream_height = args.height
 
 
-# grab a pointer to the video stream and initialize the FPS counter
-print("[INFO] sampling frames from webcam...")
+# setup threaded video stream
 stream = USBCamStream(src=vid_src)
 stream.resize_stream(stream_width,stream_height)
 stream = stream.start()
+
 prev_time = 0
+
 # loop over some frames
 while True:
+    # get frame
     grabbed, frame = stream.read()
-    cv2.imshow("Frame", frame)
-    key = cv2.waitKey(1) & 0xFF
     
+    # track fps
     current_time = time.time()
     fps = 1/(current_time-prev_time)
     prev_time = current_time
-    
     cv2.putText(frame, str(int(fps)), (50,50),  cv2.FONT_HERSHEY_PLAIN,3,(225,0,0),3)
     
+    # show the frame
+    cv2.imshow("Frame", frame)
+    
+    # press q to quit
+    key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
         break
 
 # cleanup
+stream.stop()
 stream.release()
 cv2.destroyAllWindows()

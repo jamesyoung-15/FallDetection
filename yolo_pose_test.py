@@ -41,7 +41,7 @@ def main():
     cap = USBCamStream(src=vid_source)
     cap.resize_stream(vid_width,vid_height)
     cap = cap.start()
-    cap.change_format()
+    # cap.change_format()
 
     # array to store prev frame data for determining action
     prev_data = [None]
@@ -166,7 +166,7 @@ def main():
                 continue
         if key == 27:  # ESC
             break
-        
+    cap.stop()
     cap.release()
     cv2.destroyAllWindows()
     
