@@ -104,4 +104,15 @@ def action_state(theta, phi, alpha):
         # others?
     else:
         raise Exception("invalid theta/phi angles")
-    
+
+def test_state(theta, phi=None, alpha=None, beta=None):
+    """ Test function for checking action state. Still trying out """
+    if theta > -1:
+        if theta>150:
+            return "lying down"
+        elif theta>120:
+            return "standing"
+        elif theta<120:
+            return "sitting"
+    else:
+        raise Exception("invalid theta angle")

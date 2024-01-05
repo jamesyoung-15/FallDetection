@@ -81,25 +81,22 @@ def main():
                 if num_pts !=0:
                     # for each person
                     for i in range(num_people):
-                        # extract relevant keypts
-                        left_shoulder = get_xy(keypts.xy[i, my_defs.KEYPOINT_DICT['left_shoulder']])
-                        right_shoulder = get_xy(keypts.xy[i, my_defs.KEYPOINT_DICT['right_shoulder']])
-                        left_hip = get_xy(keypts.xy[i, my_defs.KEYPOINT_DICT['left_hip']])
-                        right_hip = get_xy(keypts.xy[i, my_defs.KEYPOINT_DICT['right_hip']])
-                        left_knee = get_xy(keypts.xy[i, my_defs.KEYPOINT_DICT['left_knee']])
-                        right_knee = get_xy(keypts.xy[i, my_defs.KEYPOINT_DICT['right_knee']])
-                        # get confidence scores
-                        left_shoulder_conf = get_conf(keypts.conf[i], 'left_shoulder')
-                        right_shoulder_conf = get_conf(keypts.conf[i], 'right_shoulder')
-                        left_hip_conf = get_conf(keypts.conf[i], 'left_hip')
-                        right_hip_conf = get_conf(keypts.conf[i], 'right_hip')
-                        left_knee_conf = get_conf(keypts.conf[i], 'left_knee')
-                        right_knee_conf = get_conf(keypts.conf[i], 'right_knee')
+                        # extract relevant keypoints and confidence scores into nested dict
+                        keypts_dict = {}
+                        for parts in my_defs.IMPORTANT_PTS:
+                            keypts_dict[parts] = {}
+                            keypts_dict[parts]['xy'] = get_xy(keypts.xy[i, my_defs.KEYPOINT_DICT[parts]])
+                            keypts_dict[parts]['conf_score'] = get_conf(keypts.conf[i], parts)
                         
                         # check whether left/right keypt exist, if both exist get midpoint
-                        shoulder = utils.get_mainpoint(left_shoulder, right_shoulder, left_shoulder_conf, right_shoulder_conf, conf_threshold=conf_threshold,  part = "shoulders")
-                        hips = utils.get_mainpoint(left_hip, right_hip, left_hip_conf, right_hip_conf, conf_threshold=conf_threshold, part = "hips")
-                        knees = utils.get_mainpoint(left_knee, right_knee, left_knee_conf, right_knee_conf, conf_threshold=conf_threshold, part = "knees")
+                        shoulder = utils.get_mainpoint(keypts_dict['left_shoulder']['xy'], keypts_dict['right_shoulder']['xy'], 
+                                                       keypts_dict['left_shoulder']['conf_score'], keypts_dict['right_shoulder']['conf_score'], conf_threshold=conf_threshold,  part = "shoulders")
+                        hips = utils.get_mainpoint(keypts_dict['left_hip']['xy'], keypts_dict['right_hip']['xy'], keypts_dict['left_hip']['conf_score'], 
+                                                   keypts_dict['right_hip']['conf_score'], conf_threshold=conf_threshold, part = "hips")
+                        knees = utils.get_mainpoint(keypts_dict['left_knee']['xy'], keypts_dict['right_knee']['xy'], keypts_dict['left_knee']['conf_score'], 
+                                                    keypts_dict['right_knee']['conf_score'], conf_threshold=conf_threshold, part = "knees")
+                        
+                        # track if main parts exist
                         shoulder_exist = False
                         hips_exist = False
                         knees_exist = False
@@ -135,9 +132,6 @@ def main():
                         # calculate vector if all 3 main pts exist
                         spine_leg_theta = -1 # angle between spine (vector between shoulder and hips) and legs (vector between hips and knees)
                         spine_x_axis_phi = -1 # angle between spine (vector between shoulder and hips) and x_axis along hip point
-                        standing = None
-                        sitting = None
-                        lying_down = None
                         if shoulder_exist and hips_exist and knees_exist:
                             spine_leg_theta = utils.angle_between(spine_vector, legs_vector)
                             hips_x_axis = utils.calculate_vector(hips, (hips[0]+20, hips[1]))
