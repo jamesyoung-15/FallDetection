@@ -14,6 +14,9 @@ class USBCamStream:
 		# start the thread to read frames from the video stream
 		Thread(target=self.update, args=()).start()
 		return self
+	def resize_stream(self, width, height):
+		self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+		self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 	def update(self):
 		# keep looping infinitely until the thread is stopped
 		while True:

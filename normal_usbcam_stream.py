@@ -3,10 +3,12 @@ import time
 import utils
 
 args = utils.get_args()
+stream_width = args.width
+stream_height = args.height
 
 cap = cv2.VideoCapture(args.src)
-cap.set(3, 640)
-cap.set(4, 480)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, stream_height)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, stream_width)
 
 prevtime = 0
 
