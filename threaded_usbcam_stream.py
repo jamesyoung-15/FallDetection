@@ -19,15 +19,19 @@ stream = stream.start()
 prev_time = 0
 # loop over some frames
 while True:
-	# grab the frame from the stream and resize it to have a maximum
-	# width of 400 pixels
     grabbed, frame = stream.read()
     cv2.imshow("Frame", frame)
     key = cv2.waitKey(1) & 0xFF
     
+    current_time = time.time()
+    fps = 1/(current_time-prev_time)
+    prev_time = current_time
+    
+    cv2.putText(frame, str(int(fps)), (50,50),  cv2.FONT_HERSHEY_PLAIN,3,(225,0,0),3)
+    
     if key == ord('q'):
         break
 
-# do a bit of cleanup
+# cleanup
 stream.release()
 cv2.destroyAllWindows()

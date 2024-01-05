@@ -37,6 +37,7 @@ def main():
     cap = cv2.VideoCapture(vid_source)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, vid_width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, vid_height)
+    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
 
     # array to store prev frame data for determining action
     prev_data = [None]
