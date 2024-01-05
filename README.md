@@ -12,9 +12,13 @@ pip install ultralytics
 ### Example Run
 -  Yolo Pose Estimate on Video
 ```bash
-python yolo-action-detect.py --src test/data/videos/fall-1.mp4
+python run.py --src test/data/videos/fall-1.mp4
 ```
 
+- Yolo Pose Estimate on Image
+```bash
+python run.py --src test/data/images/lie-down-1.mp4 --type 1
+```
 
 
 ## Possible Approaches
@@ -27,7 +31,7 @@ python yolo-action-detect.py --src test/data/videos/fall-1.mp4
 4. Combine some of the above methods (eg. pose estimate + classification).
 
 ### Comparing Pose Estimation Models
-There are many pose detection models available. Below are some I considered and tested|
+There are many pose detection models available. Below are some I considered:
 - Movenet
 - Posenet
 - Blazenet (from Mediapipe)
@@ -79,5 +83,7 @@ Seems like Movenet or Yolo V8 most suitable as it supports multi-person pose det
 
 
 ## Resources
+(Yolo Pose)[https://docs.ultralytics.com/tasks/pose/]
 (Movenet Example)[https://github.com/Kazuhito00/MoveNet-Python-Example/tree/main]
 (Potential way to increase USB camera FPS)[https://pyimagesearch.com/2015/12/21/increasing-webcam-fps-with-python-and-opencv/]
+(Example of using Pose to determine posture)[https://bozliu.medium.com/dynamic-siting-posture-recognition-and-correction-68ae418fbc77]
