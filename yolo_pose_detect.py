@@ -13,7 +13,12 @@ def get_xy(keypoint):
     except:
         raise Exception("unable to get keypoint coordinate")
 
-
+def get_conf(conf_scores, part):
+    """ Return confidence score for each keypoint (float). Input conf_scores is keypoint.conf (list). """
+    try:
+        return float(conf_scores[my_defs.KEYPOINT_DICT[part]])
+    except:
+        raise Exception("unable to get confidence score")
 
 def main():
     # get user passed args
@@ -21,13 +26,17 @@ def main():
     vid_source = args.src
     show_frame = args.show
     manual_move = bool(int(args.manual_frame))
+    conf_threshold = args.conf_score
+    vid_width = args.width
+    vid_height = args.height
+    
     # load pretrained model
     model = YOLO("yolo-weights/yolov8n-pose.pt")
 
     # load video src
     cap = cv2.VideoCapture(vid_source)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, vid_width)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, vid_height)
 
     # array to store prev frame data for determining action
     prev_data = [None]
@@ -74,10 +83,19 @@ def main():
                         left_knee = get_xy(keypts.xy[i, my_defs.KEYPOINT_DICT['left_knee']])
                         right_knee = get_xy(keypts.xy[i, my_defs.KEYPOINT_DICT['right_knee']])
                         
+                        # get confidence scores
+                        left_shoulder_conf = get_conf(keypts.conf[i], 'left_shoulder')
+                        right_shoulder_conf = get_conf(keypts.conf[i], 'right_shoulder')
+                        left_hip_conf = get_conf(keypts.conf[i], 'left_hip')
+                        right_hip_conf = get_conf(keypts.conf[i], 'right_hip')
+                        left_knee_conf = get_conf(keypts.conf[i], 'left_knee')
+                        right_knee_conf = get_conf(keypts.conf[i], 'right_knee')
+                        
                         # check whether left/right keypt exist, if both exist get midpoint
-                        shoulder = utils.get_mainpoint(left_shoulder, right_shoulder, part = "shoulder")
-                        hips = utils.get_mainpoint(left_hip, right_hip, "hips")
-                        knees = utils.get_mainpoint(left_knee, right_knee, "knees")
+                        shoulder = utils.get_mainpoint(left_shoulder, right_shoulder, left_shoulder_conf, right_shoulder_conf, conf_threshold=conf_threshold,  part = "shoulders")
+                        hips = utils.get_mainpoint(left_hip, right_hip, left_hip_conf, right_hip_conf, conf_threshold=conf_threshold, part = "hips")
+                        knees = utils.get_mainpoint(left_knee, right_knee, left_knee_conf, right_knee_conf, conf_threshold=conf_threshold, part = "knees")
+                        
                         shoulder_exist = False
                         hips_exist = False
                         knees_exist = False
