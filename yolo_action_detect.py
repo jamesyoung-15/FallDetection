@@ -98,7 +98,8 @@ def inference(person_num, keypts, frame, conf_threshold=0.5):
         print(f'State: {state}')
 
 def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, show_frame=True, manual_move=False, interval=0):
-    """ Runs inference with threading, for usb camera stream.  """    
+    """ Runs inference with threading, for usb camera stream.  """
+    print("Running inference with threading on usb camera.")    
     # load pretrained model
     model = YOLO("yolo-weights/yolov8n-pose.pt")
 
@@ -110,6 +111,7 @@ def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, sh
     # threaded usb cam stream
     cap = USBCamStream(src=vid_source)
     cap.resize_stream(vid_width,vid_height)
+    cap.set_fps(5)
     cap = cap.start()
     # cap.change_format()
 

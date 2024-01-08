@@ -41,6 +41,10 @@ class USBCamStream:
 		""" Change the video stream format from YUYV to MJPG. """
 		self.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
   
+	def set_fps(self, fps):
+		""" Set camera fps (int) """
+		self.stream.set(cv2.CAP_PROP_FPS, fps)
+  
 	def stop(self):
 		""" Indicate that the thread should be stopped. """
 		self.stopped = True

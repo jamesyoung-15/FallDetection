@@ -15,7 +15,7 @@ stream_height = args.height
 stream = USBCamStream(src=vid_src)
 stream.resize_stream(stream_width,stream_height)
 stream = stream.start()
-
+# stream.set_fps(5)
 prev_time = 0
 
 # loop over some frames
