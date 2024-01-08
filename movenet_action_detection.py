@@ -159,9 +159,9 @@ def main():
             left_knee = get_xy(scores, keypts, 'left_knee', conf_threshold)
             right_knee = get_xy(scores, keypts, 'right_knee', conf_threshold)
             
-            shoulder = utils.get_mainpoint(left_shoulder, right_shoulder, "shoulder")
-            hips = utils.get_mainpoint(left_hip, right_hip, "hips")
-            knees = utils.get_mainpoint(left_knee, right_knee, "knees")
+            shoulder = utils.get_mainpoint(left_shoulder, right_shoulder, scores[my_defs.KEYPOINT_DICT['left_shoulder']], scores[my_defs.KEYPOINT_DICT['right_shoulder']], part="shoulder")
+            hips = utils.get_mainpoint(left_hip, right_hip, scores[my_defs.KEYPOINT_DICT['left_hip']], scores[my_defs.KEYPOINT_DICT['right_hip']], part="hips")
+            knees = utils.get_mainpoint(left_knee, right_knee, scores[my_defs.KEYPOINT_DICT['left_hip']], scores[my_defs.KEYPOINT_DICT['right_hip']], part="knees")
             shoulder_exist = False
             hips_exist = False
             knees_exist = False
@@ -196,9 +196,6 @@ def main():
             # calculate vector if all 3 main pts exist
             spine_leg_theta = -1 # angle between spine (vector between shoulder and hips) and legs (vector between hips and knees)
             spine_x_axis_phi = -1 # angle between spine (vector between shoulder and hips) and x_axis along hip point
-            standing = None
-            sitting = None
-            lying_down = None
             if shoulder_exist and hips_exist and knees_exist:
                 spine_leg_theta = utils.angle_between(spine_vector, legs_vector)
                 hips_x_axis = utils.calculate_vector(hips, (hips[0]+20, hips[1]))
