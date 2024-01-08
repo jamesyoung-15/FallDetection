@@ -70,7 +70,7 @@ def inference(person_num, keypts, frame, conf_threshold=0.5):
         # utils.draw_keypoint_line(frame, shoulder, hips)
         utils.draw_vector(frame, hips, spine_vector)
         # print(f'Spine Vector: {spine_vector}')
-        # spine_vector_length = np.linalg.norm(spine_vector)
+        spine_vector_length = np.linalg.norm(spine_vector)
         
     if hips_exist and knees_exist:
         legs_vector = utils.calculate_vector(hips, knees)
@@ -78,7 +78,9 @@ def inference(person_num, keypts, frame, conf_threshold=0.5):
         # utils.draw_keypoint_line(frame, hips, knees)
         utils.draw_vector(frame, hips, legs_vector)
         # print(f'Leg Vector: {legs_vector}')
-        # legs_vector_length = np.linalg.norm(legs_vector)
+        legs_vector_length = np.linalg.norm(legs_vector)
+    
+    print(f'Spine Vector Length: {spine_vector_length}, Legs Vector Length: {legs_vector_length}')
     
     # calculate vector if all 3 main pts exist
     spine_leg_theta = None # angle between spine (vector between shoulder and hips) and legs (vector between hips and knees)
