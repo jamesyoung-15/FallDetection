@@ -118,7 +118,6 @@ def test_state(theta=None, phi=None, alpha=None, beta=None):
         return "standing"
     if phi != None and (phi<=25 or phi>=155):
         return "lying down"
-    
     else:
         return "sitting"
         # raise Exception("invalid theta angle")

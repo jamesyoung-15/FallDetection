@@ -70,7 +70,7 @@ def inference(person_num, keypts, frame, conf_threshold=0.5):
         # utils.draw_keypoint_line(frame, shoulder, hips)
         utils.draw_vector(frame, hips, spine_vector)
         # print(f'Spine Vector: {spine_vector}')
-        spine_vector_length = np.linalg.norm(spine_vector)
+        # spine_vector_length = np.linalg.norm(spine_vector)
         
     if hips_exist and knees_exist:
         legs_vector = utils.calculate_vector(hips, knees)
@@ -78,7 +78,7 @@ def inference(person_num, keypts, frame, conf_threshold=0.5):
         # utils.draw_keypoint_line(frame, hips, knees)
         utils.draw_vector(frame, hips, legs_vector)
         # print(f'Leg Vector: {legs_vector}')
-        legs_vector_length = np.linalg.norm(legs_vector)
+        # legs_vector_length = np.linalg.norm(legs_vector)
     
     # calculate vector if all 3 main pts exist
     spine_leg_theta = None # angle between spine (vector between shoulder and hips) and legs (vector between hips and knees)
@@ -96,6 +96,7 @@ def inference(person_num, keypts, frame, conf_threshold=0.5):
         # state = utils.action_state(spine_leg_theta, spine_x_axis_phi, legs_y_axis_alpha)
         state = utils.test_state(spine_leg_theta, spine_x_axis_phi, legs_y_axis_alpha)
         print(f'State: {state}')
+        cv2.putText(frame, state, (hips[0]+30, hips[1]+20),  cv2.FONT_HERSHEY_PLAIN,2,(155,200,0),2)
 
 def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, show_frame=True, manual_move=False, interval=0):
     """ Runs inference with threading, for usb camera stream.  """
@@ -110,8 +111,7 @@ def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, sh
     
     # threaded usb cam stream
     cap = USBCamStream(src=vid_source)
-    cap.resize_stream(vid_width,vid_height)
-    cap.set_fps(5)
+    cap.resize_stream(vid_width,vid_height) 
     cap = cap.start()
     # cap.change_format()
 
@@ -195,7 +195,7 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
     # array to store prev frame data for determining action
     # prev_data = [None]
     # Store the track history
-    track_history = defaultdict(lambda: [])
+    # track_history = defaultdict(lambda: [])
 
     # time variables
     prev_time = 0 # for tracking interval to execute predict with Yolo model
@@ -225,7 +225,7 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
             # track_ids = results[0].boxes.id.int().cpu().tolist()
 
             # Visualize the results on the frame
-            frame = results[0].plot()
+            # frame = results[0].plot()
             
 
                 # Draw the tracking lines
