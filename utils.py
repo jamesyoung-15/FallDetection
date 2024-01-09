@@ -89,37 +89,28 @@ def draw_vector(image, start_point, vector, color=(255, 255, 255), thickness=5):
     end_point = tuple(np.array(start_point) + np.array(vector))
     cv2.line(image, tuple(start_point), end_point, color, thickness)
 
-def action_state(theta, phi, alpha):
-    """ Test some conditions to determine action state. Still trying out """
-    # check angle vexist
-    if theta and phi:
-        # legs basically level with ground
-        if alpha>80 and theta>150:
-            return "lying down"
-        elif alpha>80 and theta<150:
-            return "sitting"
-        # spine and leg further apart and spine far from ground
-        if theta>120 and phi>25:
-            return "standing"
-        # spine and leg further apart and spine far from ground
-        elif theta<120 and phi>25:
-            return "sitting"
-        # lying down
-        elif phi<=25 and alpha>70:
-            return "lying down"
-        
-        # others?
-    else:
-        raise Exception("invalid theta/phi angles")
 
 def test_state(theta=None, phi=None, alpha=None, beta=None, ratio=None):
-    """ Test function for checking action state. Still trying out """
+    """ 
+    Test function for checking action state. Still trying out. 
+    
+    Input:
+    - theta: angle between spine and legs
+    - alpha: angle between legs and y-axis along hips
+    - phi: angle between spine and x-axis along hips
+    - beta: optional angle if need more info
+    - ratio: ratio between legs and spine vector lengths
+    """
+    # legs super close to hips usually means person is sitting (eg. cross legged, sitting directly in front of camera, etc.)
     if ratio>2.5:
         return "sitting"
+    # alpha<=30 means legs are vertical, usually means person is standing/walking
     if alpha != None and alpha<=30:
         return "standing"
+    # (phi<=25 or phi>=155) means spine is parallel to ground, usually means person is lying down
     if phi != None and (phi<=25 or phi>=155):
         return "lying down"
+    # otherwise most likely sitting
     else:
         return "sitting"
         # raise Exception("invalid theta angle")

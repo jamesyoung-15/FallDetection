@@ -6,7 +6,6 @@ import utils
 import my_defs
 import numpy as np
 from camera_stream.usbcam_stream import USBCamStream
-from collections import defaultdict
 
 
 def get_xy(keypoint):
@@ -95,17 +94,16 @@ def inference(person_num, keypts, frame, conf_threshold=0.5, track_id=0):
         hips_x_axis = utils.calculate_vector(hips, (hips[0]+20, hips[1]))
         hips_y_axis = utils.calculate_vector(hips, (hips[0], hips[1]+20))
         # utils.draw_vector(frame, hips, hips_x_axis, color=(255,255,255))
-        # spine_x_axis_phi = utils.calculate_angle_with_x_axis(spine_vector)
         spine_x_axis_phi = utils.angle_between(spine_vector, hips_x_axis)
         legs_y_axis_alpha = utils.angle_between(legs_vector, hips_y_axis)
-        print(f'Person ID: {track_id}')
+        if track_id != -1:
+            id_text =  "ID:" + str(track_id)
+            cv2.putText(frame, id_text, (hips[0]+30, hips[1]-20),  cv2.FONT_HERSHEY_PLAIN,2,(155,200,0),2)
+            print(f'Person ID: {track_id}')
         print(f'Theta {spine_leg_theta}, Phi: {spine_x_axis_phi}, Alpha: {legs_y_axis_alpha}')
         # state = utils.action_state(spine_leg_theta, spine_x_axis_phi, legs_y_axis_alpha)
         state = utils.test_state(theta=spine_leg_theta, phi=spine_x_axis_phi, alpha=legs_y_axis_alpha, ratio=spine_leg_ratio)
         print(f'State: {state}')
-        if track_id != -1:
-            id_text =  "ID:" + str(track_id)
-            cv2.putText(frame, id_text, (hips[0]+30, hips[1]-20),  cv2.FONT_HERSHEY_PLAIN,2,(155,200,0),2)
         cv2.putText(frame, state, (hips[0]+30, hips[1]+20),  cv2.FONT_HERSHEY_PLAIN,2,(155,200,0),2)
         
     # test fall detect
@@ -128,8 +126,8 @@ def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, sh
     cap = cap.start()
     # cap.change_format()
 
-    # array to store prev frame data for determining action
-    # prev_data = [None]
+    # dictionary to store prev frame data for determining action
+    prev_data = {}
 
     # time variables
     prev_time = 0 # for tracking interval to execute predict with Yolo model
@@ -169,8 +167,41 @@ def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, sh
                 
                 # if keypts detected
                 if num_pts !=0:
+                    # for each person
                     for i in range(num_people):
-                        inference(i, keypts, frame, conf_threshold=0.5, track_id=int(track_id[i]))
+                        id = int(track_id[i])
+                        spine_vector, hips = inference(i, keypts, frame, conf_threshold=0.5,track_id=id)
+                        # append spine vector to prev_data
+                        if prev_data.get(id) == None:
+                            prev_data[id] = {}
+                            prev_data[id]['spine_vector'] = [spine_vector]
+                        else:
+                            if len(prev_data[id]['spine_vector'])>=3:
+                                prev_data[id]['spine_vector'].pop(0)
+                            prev_data[id]['spine_vector'].append(spine_vector)
+                        # append inference time
+                        prev_data[id]['last_check'] = curr_time
+            
+            for key, value in prev_data.copy().items():
+                # detect fall from spine vector in past 3 frames
+                if len(value['spine_vector']) == 3:
+                    # large angle somewhere between spine vector likely indicates fall
+                    if utils.angle_between(value['spine_vector'][0], value['spine_vector'][1]) > 50 \
+                    or utils.angle_between(value['spine_vector'][1], value['spine_vector'][2]) > 50 \
+                    or utils.angle_between(value['spine_vector'][0], value['spine_vector'][2]) > 50:
+                        print(prev_data)
+                        print(f"Person {key} Fall Detected")
+                        cv2.putText(frame, "Fall Detected", (hips[0]+30, hips[1]+50),  cv2.FONT_HERSHEY_PLAIN,2,(245,0,0),2)
+                        prev_data[key]['spine_vector'].pop(0)
+                        prev_data[key]['spine_vector'].pop(0)
+                        prev_data[key]['spine_vector'].pop(0)
+                
+                # delete data if not checked for a while
+                time_till_delete = 2
+                if curr_time -  value['last_check'] > time_till_delete:
+                    print(f"ID {key} hasn't checked over {time_till_delete} seconds")
+                    print(f'Deleting ID {key}')
+                    del prev_data[key]
 
                             
         # track fps and draw to frame
@@ -211,7 +242,7 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
     
     # threaded usb cam stream
 
-    # array to store prev frame data for determining action
+    # dictionary to store prev frame data for determining action
     prev_data = {}
 
     # time variables
@@ -278,14 +309,15 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
             for key, value in prev_data.copy().items():
                 # detect fall from spine vector in past 3 frames
                 if len(value['spine_vector']) == 3:
-                    # large angle somewhere between spine vector likely indicates fall
+                    # large angle somewhere between 3 frames of spine vector likely indicates fall
                     if utils.angle_between(value['spine_vector'][0], value['spine_vector'][1]) > 50 \
                     or utils.angle_between(value['spine_vector'][1], value['spine_vector'][2]) > 50 \
                     or utils.angle_between(value['spine_vector'][0], value['spine_vector'][2]) > 50:
-                        print(prev_data)
                         print(f"Person {key} Fall Detected")
                         cv2.putText(frame, "Fall Detected", (hips[0]+30, hips[1]+50),  cv2.FONT_HERSHEY_PLAIN,2,(245,0,0),2)
-                
+                        # remove spine vectors from prev_data to avoid multiple fall detection
+                        prev_data[key]['spine_vector'] = prev_data[key]['spine_vector'][3:]
+                        
                 # delete data if not checked for a while
                 time_till_delete = 2
                 if curr_time -  value['last_check'] > time_till_delete:
