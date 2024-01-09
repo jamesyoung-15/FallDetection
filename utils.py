@@ -112,8 +112,10 @@ def action_state(theta, phi, alpha):
     else:
         raise Exception("invalid theta/phi angles")
 
-def test_state(theta=None, phi=None, alpha=None, beta=None):
+def test_state(theta=None, phi=None, alpha=None, beta=None, ratio=None):
     """ Test function for checking action state. Still trying out """
+    if ratio>2.5:
+        return "sitting"
     if alpha != None and alpha<=30:
         return "standing"
     if phi != None and (phi<=25 or phi>=155):

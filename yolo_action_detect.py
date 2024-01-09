@@ -24,7 +24,7 @@ def get_conf(conf_scores, part):
         raise Exception("unable to get confidence score")
     
 
-def inference(person_num, keypts, frame, conf_threshold=0.5):
+def inference(person_num, keypts, frame, conf_threshold=0.5, track_id=0):
     """ Performs inference on each person in frame. """
     # extract relevant keypoints and confidence scores into nested dict
     keypts_dict = {}
@@ -65,6 +65,7 @@ def inference(person_num, keypts, frame, conf_threshold=0.5):
     legs_vector = (0,0)
     spine_vector_length = None
     legs_vector_length = None
+    spine_leg_ratio = None
     if shoulder_exist and hips_exist:
         spine_vector = utils.calculate_vector(hips, shoulder)
         # utils.draw_keypoint_line(frame, shoulder, hips)
@@ -80,11 +81,15 @@ def inference(person_num, keypts, frame, conf_threshold=0.5):
         # print(f'Leg Vector: {legs_vector}')
         legs_vector_length = np.linalg.norm(legs_vector)
     
-    print(f'Spine Vector Length: {spine_vector_length}, Legs Vector Length: {legs_vector_length}')
+    if spine_vector_length is not None and legs_vector_length is not None:
+        spine_leg_ratio = spine_vector_length/legs_vector_length
+    
+    # print(f'Spine Vector Length: {spine_vector_length}, Legs Vector Length: {legs_vector_length}, Ratio: {spine_leg_ratio}')
     
     # calculate vector if all 3 main pts exist
     spine_leg_theta = None # angle between spine (vector between shoulder and hips) and legs (vector between hips and knees)
     spine_x_axis_phi = None # angle between spine (vector between shoulder and hips) and x_axis along hip point
+    legs_y_axis_alpha = None # angle between legs (vector between hips and knees) and y_axis along hip point
     if shoulder_exist and hips_exist and knees_exist:
         spine_leg_theta = utils.angle_between(spine_vector, legs_vector)
         hips_x_axis = utils.calculate_vector(hips, (hips[0]+20, hips[1]))
@@ -93,12 +98,19 @@ def inference(person_num, keypts, frame, conf_threshold=0.5):
         # spine_x_axis_phi = utils.calculate_angle_with_x_axis(spine_vector)
         spine_x_axis_phi = utils.angle_between(spine_vector, hips_x_axis)
         legs_y_axis_alpha = utils.angle_between(legs_vector, hips_y_axis)
-        print(f'Person {person_num+1}')
+        print(f'Person ID: {track_id}')
         print(f'Theta {spine_leg_theta}, Phi: {spine_x_axis_phi}, Alpha: {legs_y_axis_alpha}')
         # state = utils.action_state(spine_leg_theta, spine_x_axis_phi, legs_y_axis_alpha)
-        state = utils.test_state(spine_leg_theta, spine_x_axis_phi, legs_y_axis_alpha)
+        state = utils.test_state(theta=spine_leg_theta, phi=spine_x_axis_phi, alpha=legs_y_axis_alpha, ratio=spine_leg_ratio)
         print(f'State: {state}')
+        if track_id != -1:
+            id_text =  "ID:" + str(track_id)
+            cv2.putText(frame, id_text, (hips[0]+30, hips[1]-20),  cv2.FONT_HERSHEY_PLAIN,2,(155,200,0),2)
         cv2.putText(frame, state, (hips[0]+30, hips[1]+20),  cv2.FONT_HERSHEY_PLAIN,2,(155,200,0),2)
+        
+    # test fall detect
+    if shoulder_exist and hips_exist:
+        pass
 
 def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, show_frame=True, manual_move=False, interval=0):
     """ Runs inference with threading, for usb camera stream.  """
@@ -123,7 +135,8 @@ def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, sh
     # time variables
     prev_time = 0 # for tracking interval to execute predict with Yolo model
     prev_time_fps = 0 # for fps counting
-
+    num_frames_elapsed = 0
+    
     while True:
         # read frame
         ret, frame = cap.read()
@@ -132,28 +145,33 @@ def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, sh
         
         # track time for interval and fps
         curr_time = time.time()
-        elapsed_time = curr_time - prev_time
-        
+        # elapsed_time = curr_time - prev_time
+        num_frames_elapsed += 1
         # if specified predict interval
-        if elapsed_time >= interval:
+        # if elapsed_time >= interval:
+        if num_frames_elapsed >= interval:
             # update timer
-            prev_time = curr_time
-            
+            # prev_time = curr_time
+            num_frames_elapsed = 0
             # inference
             # results = model.predict(frame, imgsz=640, conf=0.5, verbose=False)
-            results = model.track(frame, imgsz=640, conf=0.5, verbose=False, tracker="bytetrack.yaml")
+            results = model.track(frame, imgsz=640, conf=0.5, verbose=False, tracker="bytetrack.yaml", persist=True)
             # get data from inference
             for result in results:
                 keypts = result.keypoints
                 # print(f'Keypoints: \n{kpts}')
                 num_people = keypts.shape[0]
                 num_pts = keypts.shape[1]
-                
+                track_id = [-1, -1, -1] # random pad for testing
+                boxes = None
+                if result.boxes.id is not None:
+                    track_id = result.boxes.id.tolist()
+                    boxes = result.boxes.xywh.tolist()            
                 
                 # if keypts detected
                 if num_pts !=0:
                     for i in range(num_people):
-                        inference(i, keypts, frame, conf_threshold=0.5)
+                        inference(i, keypts, frame, conf_threshold=0.5, track_id=int(track_id[i]))
 
                             
         # track fps and draw to frame
@@ -195,14 +213,13 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
     # threaded usb cam stream
 
     # array to store prev frame data for determining action
-    # prev_data = [None]
-    # Store the track history
-    # track_history = defaultdict(lambda: [])
+    prev_data = [None]
 
     # time variables
     prev_time = 0 # for tracking interval to execute predict with Yolo model
     prev_time_fps = 0 # for fps counting
-
+    num_frames_elapsed = 0
+    
     while True:
         # read frame
         ret, frame = cap.read()
@@ -211,28 +228,22 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
         
         # track time for interval and fps
         curr_time = time.time()
-        elapsed_time = curr_time - prev_time
-        
+        # elapsed_time = curr_time - prev_time
+        num_frames_elapsed += 1
         # if specified predict interval
-        if elapsed_time >= interval:
+        # if elapsed_time >= interval:
+        if num_frames_elapsed >= interval:
             # update timer
-            prev_time = curr_time
+            # prev_time = curr_time
+            num_frames_elapsed = 0
             
             # inference
             # results = model.predict(frame, imgsz=640, conf=0.5, verbose=False)
             results = model.track(frame, imgsz=640, conf=0.5, verbose=False, tracker="bytetrack.yaml", persist=True)
-            
-            # Get the boxes and track IDs
-            # boxes = results[0].boxes.xywh.cpu()
-            # track_ids = results[0].boxes.id.int().cpu().tolist()
 
             # Visualize the results on the frame
             # frame = results[0].plot()
             
-
-                # Draw the tracking lines
-                # points = np.hstack(track).astype(np.int32).reshape((-1, 1, 2))
-                # cv2.polylines(annotated_frame, [points], isClosed=False, color=(230, 230, 230), thickness=10)
             
             # get data from inference
             for result in results:
@@ -241,12 +252,18 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
                 num_people = keypts.shape[0]
                 num_pts = keypts.shape[1]
                 
+                track_id = [-1, -1, -1] # random pad for testing
+                boxes = None
+                
+                if result.boxes.id is not None:
+                    track_id = result.boxes.id.tolist()
+                    boxes = result.boxes.xywh.tolist()
                 
                 # if keypts detected
                 if num_pts !=0:
                     # for each person
                     for i in range(num_people):
-                        inference(i, keypts, frame, conf_threshold=0.5)
+                        inference(i, keypts, frame, conf_threshold=0.5,track_id=int(track_id[i]))
 
                             
         # track fps and draw to frame
