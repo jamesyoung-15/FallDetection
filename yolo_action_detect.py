@@ -109,8 +109,7 @@ def inference(person_num, keypts, frame, conf_threshold=0.5, track_id=0):
         cv2.putText(frame, state, (hips[0]+30, hips[1]+20),  cv2.FONT_HERSHEY_PLAIN,2,(155,200,0),2)
         
     # test fall detect
-    if shoulder_exist and hips_exist:
-        pass
+    return spine_vector, hips
 
 def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, show_frame=True, manual_move=False, interval=0):
     """ Runs inference with threading, for usb camera stream.  """
@@ -213,7 +212,7 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
     # threaded usb cam stream
 
     # array to store prev frame data for determining action
-    prev_data = [None]
+    prev_data = {}
 
     # time variables
     prev_time = 0 # for tracking interval to execute predict with Yolo model
@@ -263,9 +262,38 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
                 if num_pts !=0:
                     # for each person
                     for i in range(num_people):
-                        inference(i, keypts, frame, conf_threshold=0.5,track_id=int(track_id[i]))
-
-                            
+                        id = int(track_id[i])
+                        spine_vector, hips = inference(i, keypts, frame, conf_threshold=0.5,track_id=id)
+                        # append spine vector to prev_data
+                        if prev_data.get(id) == None:
+                            prev_data[id] = {}
+                            prev_data[id]['spine_vector'] = [spine_vector]
+                        else:
+                            if len(prev_data[id]['spine_vector'])>=3:
+                                prev_data[id]['spine_vector'].pop(0)
+                            prev_data[id]['spine_vector'].append(spine_vector)
+                        # append inference time
+                        prev_data[id]['last_check'] = curr_time
+            
+            for key, value in prev_data.copy().items():
+                # detect fall from spine vector in past 3 frames
+                if len(value['spine_vector']) == 3:
+                    # large angle somewhere between spine vector likely indicates fall
+                    if utils.angle_between(value['spine_vector'][0], value['spine_vector'][1]) > 50 \
+                    or utils.angle_between(value['spine_vector'][1], value['spine_vector'][2]) > 50 \
+                    or utils.angle_between(value['spine_vector'][0], value['spine_vector'][2]) > 50:
+                        print(prev_data)
+                        print(f"Person {key} Fall Detected")
+                        cv2.putText(frame, "Fall Detected", (hips[0]+30, hips[1]+50),  cv2.FONT_HERSHEY_PLAIN,2,(245,0,0),2)
+                
+                # delete data if not checked for a while
+                time_till_delete = 2
+                if curr_time -  value['last_check'] > time_till_delete:
+                    print(f"ID {key} hasn't checked over {time_till_delete} seconds")
+                    print(f'Deleting ID {key}')
+                    del prev_data[key]
+                        
+                        
         # track fps and draw to frame
         fps = 1/(curr_time-prev_time_fps)
         cv2.putText(frame, str(int(fps)), (50,50),  cv2.FONT_HERSHEY_PLAIN,3,(225,0,0),3)
@@ -276,7 +304,7 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
             cv2.imshow('Yolo Pose Test', frame)
         
         # wait for user key
-        key = cv2.waitKey(1)
+        key = cv2.waitKey(10)
         # if manual move, press n to move to next frame
         if manual_move:
             key = cv2.waitKey(0)
