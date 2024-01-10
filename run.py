@@ -13,15 +13,16 @@ if __name__ == '__main__':
     vid_height = args.height
     is_image = bool(int(args.type))
     interval = args.interval
+    debug = bool(args.debug)
     
     # image inference
     if is_image:
-        yolo_action_detect.image_inference(img_src=media_source, width=vid_width, height=vid_height, show_frame=show_frame)
+        yolo_action_detect.image_inference(img_src=media_source, width=vid_width, height=vid_height, show_frame=show_frame, debug=debug)
     # threaded webcam inference
-    elif "dev" in media_source:
+    elif "/dev/" in media_source:
         yolo_action_detect.stream_inference(vid_source=media_source, vid_width=vid_width, vid_height=vid_height, 
-                                            show_frame=show_frame, manual_move=manual_move, interval=interval)
+                                            show_frame=show_frame, manual_move=manual_move, interval=interval, debug=debug)
     # normal video inference
     else:
         yolo_action_detect.video_inference(vid_source=media_source, vid_width=vid_width, vid_height=vid_height, 
-                                           show_frame=show_frame, manual_move=manual_move, interval=interval)
+                                           show_frame=show_frame, manual_move=manual_move, interval=interval, debug=debug)

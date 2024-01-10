@@ -5,9 +5,10 @@ My notes.
 ### Completed
 - Setup Pose detection for MediaPipe (Blazenet), Movenet (multi and single), and Yolo Pose
 - Setup faster usb camera streaming with threading
-- Managed to extract pose keypoints and use them to make basic action detection
+- Managed to extract pose keypoints and use them to make basic sit, stand, lie down
 
 ### Todo
+- Improve heuristic
 - Further optimize
 
 
@@ -36,11 +37,27 @@ My notes.
 
 4. Combine some of the above methods (eg. pose estimate + classification).
 
+## Yolo Pose Estimate Approach
+
+- Misclassification from 50 Ways to Sit:
+  - Tying shoe
+  - silent film star
+- Misclassification from 50 Ways to Jump:
+  - todo
+- Misclassification from 50 Ways to Fall:
+  - todo
+
+## Datasets
+  - [small kaggle dataset w/ 3 classes (sit, stand, fall)](https://www.kaggle.com/datasets/uttejkumarkandagatla/fall-detection-dataset)
+  - [medium fall dataset w/ 1 class (fall detected)](https://universe.roboflow.com/roboflow-universe-projects/fall-detection-ca3o8)
+  - [Le2i Fall Videos](https://www.kaggle.com/datasets/tuyenldvn/falldataset-imvia)
+  - 
+
 ## Quick Notes
 - On RPI Yolo pose getting >1 fps and is extremely choppy, need to further optimize
 - Movenet with TFlite is faster but pretty inaccurate
 
 - Improvements:
-    - Mike said that using image classification better than pose estimate
+    - Mike said that using image classification better than pose estimate, perhaps I'll try both
     - Vincent said rather than combining inference and camera stream in one task, can split into two 
         - If inference takes too long, can put pending

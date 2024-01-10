@@ -17,6 +17,7 @@ def get_args():
     parser.add_argument("--interval", type=float, default=0, help="Interval in seconds to run inference (eg. 2)")
     parser.add_argument("--manual_frame", type=float, default=0, help="Set this to 1 if you want to press 'n' key to advance each video frame.")
     parser.add_argument("--type", type=int, default=0, help="Specifies whether input is image or video (0 for video 1 for image). Default is video (0).")
+    parser.add_argument("--debug", type=int, default=0, help="Whether to print some debug info. Default is 0 (no debug info), 1 means print debug info.")
 
     args = parser.parse_args()
     return args
@@ -48,7 +49,7 @@ def get_mainpoint(left, right, left_conf_score, right_conf_score, conf_threshold
     
     Returns midpoint (x,y) coordinate
     """
-    main_point = (0,0)
+    main_point = None
     if left != (0,0) and right != (0,0) and left_conf_score>conf_threshold and right_conf_score>conf_threshold:
         # print(f'both left and right {part} detected')
         main_point = calculate_midpoint(left, right)
@@ -90,7 +91,7 @@ def draw_vector(image, start_point, vector, color=(255, 255, 255), thickness=5):
     cv2.line(image, tuple(start_point), end_point, color, thickness)
 
 
-def test_state(theta=None, phi=None, alpha=None, beta=None, ratio=None):
+def determine_state(phi=None, alpha=None, ratio=None, beta=None, theta=None):
     """ 
     Test function for checking action state. Still trying out. 
     
@@ -98,19 +99,35 @@ def test_state(theta=None, phi=None, alpha=None, beta=None, ratio=None):
     - theta: angle between spine and legs
     - alpha: angle between legs and y-axis along hips
     - phi: angle between spine and x-axis along hips
-    - beta: optional angle if need more info
+    - beta: angle between legs and ankle
     - ratio: ratio between legs and spine vector lengths
     """
-    # legs super close to hips usually means person is sitting (eg. cross legged, sitting directly in front of camera, etc.)
-    if ratio>2.5:
-        return "sitting"
-    # alpha<=30 means legs are vertical, usually means person is standing/walking
-    if alpha != None and alpha<=30:
-        return "standing"
-    # (phi<=25 or phi>=155) means spine is parallel to ground, usually means person is lying down
-    if phi != None and (phi<=25 or phi>=155):
-        return "lying down"
-    # otherwise most likely sitting
+    # if no legs
+    if beta==None:
+        # legs super close to hips usually means person is sitting (eg. cross legged, sitting directly in front of camera, etc.)
+        if ratio!=None and ratio>2.5:
+            return "sitting"
+        # alpha<=30 means legs are vertical, usually means person is standing/walking
+        if alpha != None and alpha<=25:
+            return "standing"
+        # (phi<=25 or phi>=155) means spine is parallel to ground, usually means person is lying down
+        if phi != None and (phi<=25 or phi>=155):
+            return "lying down"
+        # otherwise most likely sitting
+        else:
+            return "sitting"
+            # raise Exception("invalid theta angle")
     else:
-        return "sitting"
-        # raise Exception("invalid theta angle")
+        # legs super close to hips usually means person is sitting (eg. cross legged, sitting directly in front of camera, etc.)
+        if ratio!=None and ratio>2.5:
+            return "sitting"
+        # alpha<=30 means legs are vertical, usually means person is standing/walking
+        if alpha != None and alpha<=25:
+            return "standing"
+        # (phi<=25 or phi>=155) means spine is parallel to ground, usually means person is lying down
+        if phi != None and (phi<=25 or phi>=155):
+            return "lying down"
+        # otherwise most likely sitting
+        else:
+            return "sitting"
+            # raise Exception("invalid theta angle")
