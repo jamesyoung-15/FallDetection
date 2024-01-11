@@ -9,7 +9,9 @@ My notes.
 
 ### Todo
 - Improve heuristic
+  - false positive when person is bending down but not falling (ie. touching toes)
 - Further optimize
+  - still less than 1 fps on RPI 4B, need to optimize (eg. multi-threading)
 
 
 ## Approaches
@@ -51,7 +53,7 @@ My notes.
   - [small kaggle dataset w/ 3 classes (sit, stand, fall)](https://www.kaggle.com/datasets/uttejkumarkandagatla/fall-detection-dataset)
   - [medium fall dataset w/ 1 class (fall detected)](https://universe.roboflow.com/roboflow-universe-projects/fall-detection-ca3o8)
   - [Le2i Fall Videos](https://www.kaggle.com/datasets/tuyenldvn/falldataset-imvia)
-  - 
+  - [Fall videos](https://kuleuven.app.box.com/s/dyo66et36l2lqvl19i9i7p66761sy0s6)
 
 ## Quick Notes
 - On RPI Yolo pose getting >1 fps and is extremely choppy, need to further optimize

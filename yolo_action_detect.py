@@ -53,6 +53,10 @@ def extract_keypts(person_num, keypts, frame, conf_threshold=0.5, track_id=0, de
     if knees:
         utils.draw_keypoint(frame, knees)
         # print(f'Knees: {knees}')
+    
+    if ankles:
+        utils.draw_keypoint(frame, ankles)
+        # print(f'Ankles: {ankles}')
         
     # if keypts exist draw line to connect them, calculate vector
     spine_vector = None
@@ -122,7 +126,7 @@ def extract_keypts(person_num, keypts, frame, conf_threshold=0.5, track_id=0, de
         cv2.putText(frame, state, (hips[0]+30, hips[1]+20),  cv2.FONT_HERSHEY_PLAIN,2,(155,200,0),2)
     
     # return these for storing fall detection data
-    return spine_vector, legs_vector, hips
+    return spine_vector, legs_vector, hips, shoulder, state
 
 def extract_result(results, prev_data, curr_time, frame, debug=False):
     """ 
@@ -153,35 +157,71 @@ def extract_result(results, prev_data, curr_time, frame, debug=False):
             # for each person
             for i in range(num_people):
                 id = int(track_id[i])
-                spine_vector, leg_vector, hips = extract_keypts(i, keypts, frame, conf_threshold=0.5,track_id=id, debug=debug)
+                spine_vector, leg_vector, hips, shoulders, state = extract_keypts(i, keypts, frame, conf_threshold=0.5,track_id=id, debug=debug)
                 if spine_vector:
                     # append spine vector to prev_data
                     if prev_data.get(id) == None:
                         prev_data[id] = {}
                         prev_data[id]['spine_vector'] = [spine_vector]
                         prev_data[id]['hips'] = [hips]
+                        prev_data[id]['shoulders'] = [shoulders]
+                        prev_data[id]['state'] = [state]
                     else:
                         if len(prev_data[id]['spine_vector'])>=3:
                             prev_data[id]['spine_vector'].pop(0)
                             prev_data[id]['hips'].pop(0)
+                            prev_data[id]['shoulders'].pop(0)
                         prev_data[id]['spine_vector'].append(spine_vector)
                         prev_data[id]['hips'].append(hips)
+                        prev_data[id]['shoulders'].append(shoulders)
+                        prev_data[id]['state'].append(state)
                     # append inference time
                     prev_data[id]['last_check'] = curr_time
     
+
+def fall_detection(prev_data, curr_time,frame, debug=False):
+    """ 
+    Fall detection algorithm using previous 3 frame data.
+    
+    Input:
+    - prev_data: dictionary of previous frame data
+    - curr_time: current time
+    - frame: frame to draw on
+    
+    """
     # fall detection using previous frames
     for key, value in prev_data.copy().items():
         # detect fall from spine vector in past 3 frames
         if len(value['spine_vector']) == 3:
+            fall_angle1 = utils.angle_between(value['spine_vector'][0], value['spine_vector'][1])
+            fall_angle2 = utils.angle_between(value['spine_vector'][1], value['spine_vector'][2])
+            fall_angle3 = utils.angle_between(value['spine_vector'][0], value['spine_vector'][2])
+            hip_diff1 = abs(prev_data[key]["hips"][0][1] - prev_data[key]["hips"][1][1])
+            hip_diff2 = abs(prev_data[key]["hips"][1][1] - prev_data[key]["hips"][2][1])
+            hip_diff3 = abs(prev_data[key]["hips"][0][1] - prev_data[key]["hips"][2][1])
+            shoulder_diff1 = prev_data[key]["shoulders"][0][1] - prev_data[key]["shoulders"][1][1]
+            shoulder_diff2 = prev_data[key]["shoulders"][1][1] - prev_data[key]["shoulders"][2][1]
+            shoulder_diff3 = prev_data[key]["shoulders"][0][1] - prev_data[key]["shoulders"][2][1]
             # large angle somewhere between spine vector likely indicates fall
-            if utils.angle_between(value['spine_vector'][0], value['spine_vector'][1]) > 50 \
-            or utils.angle_between(value['spine_vector'][1], value['spine_vector'][2]) > 50 \
-            or utils.angle_between(value['spine_vector'][0], value['spine_vector'][2]) > 50:
-                print(prev_data[key]['hips'])
-                print(f"Person {key} Fall Detected")
-                cv2.putText(frame, "Fall Detected", (hips[0]+30, hips[1]+50),  cv2.FONT_HERSHEY_PLAIN,2,(245,0,0),2)
-                prev_data[key]['spine_vector'] = prev_data[key]['spine_vector'][3:]
-                prev_data[key]['hips'] = prev_data[key]['hips'][3:]
+            if (fall_angle1 > 50 or fall_angle2 > 50 or fall_angle3 > 50) and (shoulder_diff1 <= 0 or shoulder_diff2 <=0 or shoulder_diff3 <= 0):
+                if hip_diff1 >= 10 or hip_diff2 >=10 or hip_diff3 >= 10:
+                    fall_detected = True
+                    print("large hip diff")
+                    print(f'shoulders: {prev_data[key]["shoulders"]}')
+                    print(f'angles: {fall_angle1}, {fall_angle2}, {fall_angle3}')
+                    print(f'spine: {prev_data[key]["spine_vector"]}')
+                    print(f'hips: {prev_data[key]["hips"]}')
+                    print(f"Person {key} Fall Detected")
+                    cv2.putText(frame, "Fall Detected", (prev_data[key]["hips"][2][0]+30, prev_data[key]["hips"][2][1]+50),  cv2.FONT_HERSHEY_PLAIN,2,(245,0,0),2)
+                    # remove data from prev_data to avoid multiple detections
+                    prev_data[key]['spine_vector'] = prev_data[key]['spine_vector'][3:]
+                    prev_data[key]['hips'] = prev_data[key]['hips'][3:]
+                    prev_data[key]['shoulders'] = prev_data[key]['shoulders'][3:]
+                else:
+                    print("Low probability of fall")
+                    print(f'angles: {fall_angle1}, {fall_angle2}, {fall_angle3}')
+                    print(f'spine: {prev_data[key]["spine_vector"]}')
+                    print(f'hips: {prev_data[key]["hips"]}')
         
         # delete data if not checked for a while
         time_till_delete = 2
@@ -190,6 +230,8 @@ def extract_result(results, prev_data, curr_time, frame, debug=False):
                 print(f"ID {key} hasn't checked over {time_till_delete} seconds")
                 print(f'Deleting ID {key}')
             del prev_data[key]
+            
+
 
 def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, show_frame=True, manual_move=False, interval=0, debug=False):
     """ Runs inference with threading, for usb camera stream.  """
@@ -236,7 +278,10 @@ def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, sh
             # results = model.predict(frame, imgsz=640, conf=0.5, verbose=False)
             results = model.track(frame, imgsz=640, conf=0.6, verbose=False, tracker="bytetrack.yaml", persist=True)
             extract_result(results, prev_data, curr_time, frame, debug=debug)
-                      
+            fall_detection(prev_data, curr_time, frame, debug=debug)
+            
+        
+        
         # track fps and draw to frame
         # fps = 1/(curr_time-prev_time_fps)
         # cv2.putText(frame, str(int(fps)), (50,50),  cv2.FONT_HERSHEY_PLAIN,3,(225,0,0),3)
@@ -287,6 +332,9 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
         curr_time = time.time()
         # elapsed_time = curr_time - prev_time
         num_frames_elapsed += 1
+        fall_detected = False
+        fall_draw_points = []
+        
         # if specified predict interval
         # if elapsed_time >= interval:
         if num_frames_elapsed >= interval:
@@ -302,7 +350,8 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
             # frame = results[0].plot()
             
             extract_result(results, prev_data, curr_time, frame, debug=debug)
-                        
+            fall_detection(prev_data, curr_time, frame, debug=debug)
+            
                         
         # track fps and draw to frame
         fps = 1/(curr_time-prev_time_fps)
@@ -330,7 +379,7 @@ def image_inference(img_src="/dev/video0", width=640, height=640, show_frame=Tru
     model = YOLO("yolo-weights/yolov8n-pose.pt")
     frame = cv2.imread(img_src)
     frame = cv2.resize(frame, (640,640))
-    results = model.predict(frame, conf=0.5)
+    results = model.track(frame, conf=0.5, persist=True, tracker="bytetrack.yaml")
     
     # Visualize the results on the frame
     # frame = results[0].plot()
@@ -339,9 +388,14 @@ def image_inference(img_src="/dev/video0", width=640, height=640, show_frame=Tru
         # print(f'Keypoints: \n{kpts}')
         num_people = keypts.shape[0]
         num_pts = keypts.shape[1]
+        track_id = [1, 1, 1]
+        if result.boxes.id is not None:
+            track_id = result.boxes.id.tolist()
+            boxes = result.boxes.xywh.tolist()   
+        
         if num_pts!=0:
             for i in range(num_people):
-                extract_keypts(i, keypts, frame, conf_threshold=0.5)
+                extract_keypts(i, keypts, frame, conf_threshold=0.5, track_id=int(track_id[i]), debug=debug)
     
     cv2.imshow('Yolo Pose Test', frame)
     cv2.waitKey(0)

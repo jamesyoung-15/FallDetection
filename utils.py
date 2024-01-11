@@ -105,13 +105,13 @@ def determine_state(phi=None, alpha=None, ratio=None, beta=None, theta=None):
     # if no legs
     if beta==None:
         # legs super close to hips usually means person is sitting (eg. cross legged, sitting directly in front of camera, etc.)
-        if ratio!=None and ratio>2.5:
+        if ratio!=None and ratio>2:
             return "sitting"
         # alpha<=30 means legs are vertical, usually means person is standing/walking
-        if alpha != None and alpha<=25:
+        if alpha != None and alpha<=27:
             return "standing"
         # (phi<=25 or phi>=155) means spine is parallel to ground, usually means person is lying down
-        if phi != None and (phi<=25 or phi>=155):
+        if phi != None and (phi<=30 or phi>=150):
             return "lying down"
         # otherwise most likely sitting
         else:
@@ -119,15 +119,19 @@ def determine_state(phi=None, alpha=None, ratio=None, beta=None, theta=None):
             # raise Exception("invalid theta angle")
     else:
         # legs super close to hips usually means person is sitting (eg. cross legged, sitting directly in front of camera, etc.)
-        if ratio!=None and ratio>2.5:
+        if ratio!=None and ratio>2:
+            if phi != None and (phi<=35 or phi>=145):
+                return "lying down"
             return "sitting"
         # alpha<=30 means legs are vertical, usually means person is standing/walking
-        if alpha != None and alpha<=25:
+        if alpha != None and alpha<=27 and beta>=65 and beta<=125:
             return "standing"
         # (phi<=25 or phi>=155) means spine is parallel to ground, usually means person is lying down
-        if phi != None and (phi<=25 or phi>=155):
+        if phi != None and (phi<=35 or phi>=145):
             return "lying down"
         # otherwise most likely sitting
-        else:
+        if theta<165:
             return "sitting"
+        else:
+            return "lying down"
             # raise Exception("invalid theta angle")

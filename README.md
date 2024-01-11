@@ -3,10 +3,18 @@ My internship project/mini-prototype that aims to detect in real-time whether a 
 
 ## Usage
 ### Install Dependencies
-- Make sure to have Python 3 and Pip. Make Python virtual env and install requirements:
+- Make sure to have Python 3 and Pip. 
+- (Optional) Make and activate Python virtual environment
+
+``` bash
+python -m venv venv
+source venv/bin/activate
+```
+
+- Install requirements:
+
 ``` bash
 pip install ultralytics
-
 ```
 
 ### Example Run
