@@ -1,10 +1,11 @@
 # Simple Action Detection
 My internship project/mini-prototype that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera input. Prototype built for Raspberry Pi w/ camera.
 
-<img src="./media/demo-1.gif" width="240" height="240"/>
-<img src="./media/demo-2.gif" width="240" height="240"/>
-<img src="./media/demo-3.gif" width="240" height="240"/>
-
+<p align="middle">
+    <img src="./media/demo-1.gif" width="33%"/>
+    <img src="./media/demo-2.gif" width="33%"/>
+    <img src="./media/demo-3.gif" width="33%"/>
+</p>
 
 ## Usage
 ### Install Dependencies
