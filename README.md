@@ -2,9 +2,9 @@
 My internship project/mini-prototype that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera input. Prototype built for Raspberry Pi w/ camera.
 
 <p align="middle">
-    <img src="./media/demo-1.gif" width="33%"/>
-    <img src="./media/demo-2.gif" width="33%"/>
-    <img src="./media/demo-3.gif" width="33%"/>
+    <img src="./media/demo-1.gif" width="30%"/>
+    <img src="./media/demo-2.gif" width="30%"/>
+    <img src="./media/demo-3.gif" width="30%"/>
 </p>
 
 ## Usage
