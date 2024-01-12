@@ -14,6 +14,7 @@ if __name__ == '__main__':
     is_image = bool(int(args.type))
     interval = args.interval
     debug = bool(args.debug)
+    save_video = bool(args.save_vid)
     
     # image inference
     if is_image:

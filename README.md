@@ -1,11 +1,14 @@
 # Simple Action Detection
-My internship project/mini-prototype that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera input. Prototype built for Raspberry Pi w/ camera.
+My internship project/mini-prototype at [Intelligent Design Technology Limited](https://intelligentdesign.hk/english/) that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera image input. The project is aimed for a elderly home robot that uses Raspberry PI. This project was done within a month so improvements are needed for more robustness. 
 
 <p align="middle">
     <img src="./media/demo-1.gif" width="30%"/>
     <img src="./media/demo-2.gif" width="30%"/>
     <img src="./media/demo-3.gif" width="30%"/>
 </p>
+
+
+
 
 ## Usage
 ### Install Dependencies
@@ -23,15 +26,20 @@ source venv/bin/activate
 pip install ultralytics
 ```
 
+- Clone Repo
+```bash
+git clone https://github.com/jamesyoung-15/Fall-Detection
+```
+
 ### Example Run
 -  Yolo Pose Estimate on Video
 ```bash
-python run.py --src test/data/videos/fall-1.mp4 --interval 5
+python run.py --src test/data/videos/fall-1.mp4 --interval 7
 ```
 
 -  Yolo Pose Estimate on USB-Camera
 ```bash
-python run.py --src /dev/video0 --interval 8 --width 480 --height 480
+python run.py --src /dev/video0 --interval 7 --width 480 --height 480
 ```
 
 - Yolo Pose Estimate on Image
@@ -54,46 +62,19 @@ options:
   --debug DEBUG                 Whether to print some debug info. Default is 0 (no debug info), 1 means print debug info.
 ```
 
-
-## Possible Approaches
+## Documentation
+For full documentation see [here.](./docs/Documentation.md)
+### Possible Approaches to Fall Detection/Action Detection
 1. Use pose estimation w/ heuristics
 
-2. Use action recognition model (video classification). Could use pre-trained or train own model w/ transfer learning.
+2. Use action recognition model (video classification). Could use existing pre-trained model or train own model w/ transfer learning.
 
 3. Train an image classifier w/ dataset.
 
 4. Combine some of the above methods (eg. pose estimate + classification).
 
-### Comparing Pose Estimation Models
-There are many pose detection models available. Below are some I considered:
-- Movenet
-- Posenet
-- Blazenet (from Mediapipe)
-- Yolo V8 Pose
-
-Seems like Movenet or Yolo V8 most suitable as it supports multi-person pose detection. Movenet multi-pose lite is faster (~ 4 fps on RPI 4) but Yolo is more accurate. Will probably use Yolo and try to optimize further. 
-
-#### Movenet and Yolo Pose Keypoints
-|Part|ID|
-|-|-|
-|NOSE|           0|
-|LEFT_EYE|       1|
-|RIGHT_EYE|      2|
-|LEFT_EAR|       3|
-|RIGHT_EAR|      4|
-|LEFT_SHOULDER|  5|
-|RIGHT_SHOULDER| 6|
-|LEFT_ELBOW|     7|
-|RIGHT_ELBOW|    8|
-|LEFT_WRIST|     9|
-|RIGHT_WRIST|    10|
-|LEFT_HIP|       11|
-|RIGHT_HIP|      12|
-|LEFT_KNEE|      13|
-|RIGHT_KNEE|     14|
-|LEFT_ANKLE|     15|
-|RIGHT_ANKLE|    16|
-
+### Pose Fall Detection Approach
+Todo
 
 ## Resources
 - [Yolo Pose](https://docs.ultralytics.com/tasks/pose/)

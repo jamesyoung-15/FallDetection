@@ -49,6 +49,14 @@ My notes.
 - Misclassification from 50 Ways to Fall:
   - todo
 
+- Le2i
+  - Coffee Room 01
+    - Correct: 2,3,4,7,10,9,11,12,13,16,17,18,19,20
+    - Incorrect: 1,5,6,8,14,15
+    - Accuracy: 0.6
+  - Coffee Room 02
+    - 
+
 ## Datasets
   - [small kaggle dataset w/ 3 classes (sit, stand, fall)](https://www.kaggle.com/datasets/uttejkumarkandagatla/fall-detection-dataset)
   - [medium fall dataset w/ 1 class (fall detected)](https://universe.roboflow.com/roboflow-universe-projects/fall-detection-ca3o8)

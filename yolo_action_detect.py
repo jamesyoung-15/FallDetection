@@ -179,75 +179,7 @@ def extract_result(results, prev_data, curr_time, frame, debug=False):
                     prev_data[id]['last_check'] = curr_time
     
 
-def fall_detection(prev_data, curr_time,frame=None, debug=False):
-    """ 
-    Fall detection algorithm using previous 3 frame data.
-    
-    Input:
-    - prev_data: dictionary of previous frame data
-    - curr_time: current time
-    - frame: frame to draw on (optional)
-    
-    Output:
-    - fall_detected: boolean indicating whether fall detected
-    - fall_conf: confidence score of fall detection (still tweaking)
-    
-    """
-    fall_detected = False
-    fall_conf = 0
-    # fall detection using previous frames
-    for key, value in prev_data.copy().items():
-        # detect fall from spine vector in past 3 frames
-        if len(value['spine_vector']) == 3:
-            # calculate angles between spine vectors
-            fall_angle1 = utils.angle_between(value['spine_vector'][0], value['spine_vector'][1])
-            fall_angle2 = utils.angle_between(value['spine_vector'][1], value['spine_vector'][2])
-            fall_angle3 = utils.angle_between(value['spine_vector'][0], value['spine_vector'][2])
-            # calculate difference between hips, large difference likely indicates fall
-            hip_diff1 = abs(prev_data[key]["hips"][0][1] - prev_data[key]["hips"][1][1])
-            hip_diff2 = abs(prev_data[key]["hips"][1][1] - prev_data[key]["hips"][2][1])
-            hip_diff3 = abs(prev_data[key]["hips"][0][1] - prev_data[key]["hips"][2][1])
-            # calculate difference between shoulders, large difference likely indicates fall
-            shoulder_diff1 = prev_data[key]["shoulders"][0][1] - prev_data[key]["shoulders"][1][1]
-            shoulder_diff2 = prev_data[key]["shoulders"][1][1] - prev_data[key]["shoulders"][2][1]
-            shoulder_diff3 = prev_data[key]["shoulders"][0][1] - prev_data[key]["shoulders"][2][1]
-            
-            # large angle somewhere between spine vector likely indicates fall
-            if (fall_angle1 > 50 or fall_angle2 > 50 or fall_angle3 > 50) and (shoulder_diff1 <= 0 or shoulder_diff2 <=0 or shoulder_diff3 <= 0):
-                if hip_diff1 >= 10 or hip_diff2 >=10 or hip_diff3 >= 10:
-                    fall_detected = True
-                    print(f"Person {key} Fall Detected")
-                    # remove data from prev_data to avoid multiple detections
-                    prev_data[key]['spine_vector'] = prev_data[key]['spine_vector'][3:]
-                    prev_data[key]['hips'] = prev_data[key]['hips'][3:]
-                    prev_data[key]['shoulders'] = prev_data[key]['shoulders'][3:]
-                    
-                    # debug stuff
-                    if debug:
-                        print("large hip diff")
-                        print(f'shoulders: {prev_data[key]["shoulders"]}')
-                        print(f'angles: {fall_angle1}, {fall_angle2}, {fall_angle3}')
-                        print(f'spine: {prev_data[key]["spine_vector"]}')
-                        print(f'hips: {prev_data[key]["hips"]}')
-                        # cv2.putText(frame, "Fall Detected", (prev_data[key]["hips"][2][0]+30, prev_data[key]["hips"][2][1]+50),  cv2.FONT_HERSHEY_PLAIN,2,(245,0,0),2)
-                    
-                else:
-                    print("Low probability of fall")
-                    if debug:
-                        print(f'angles: {fall_angle1}, {fall_angle2}, {fall_angle3}')
-                        print(f'spine: {prev_data[key]["spine_vector"]}')
-                        print(f'hips: {prev_data[key]["hips"]}')
         
-        # delete data if not checked for a while
-        time_till_delete = 2
-        if curr_time -  value['last_check'] > time_till_delete:
-            if debug:
-                print(f"ID {key} hasn't checked over {time_till_delete} seconds")
-                print(f'Deleting ID {key}')
-            del prev_data[key]
-    return fall_detected
-            
-
 
 def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, show_frame=True, manual_move=False, interval=0, debug=False):
     """ Runs inference with threading, for usb camera stream.  """
@@ -292,10 +224,9 @@ def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, sh
             num_frames_elapsed = 0
             # inference
             # results = model.predict(frame, imgsz=640, conf=0.5, verbose=False)
-            results = model.track(frame, imgsz=640, conf=0.6, verbose=False, tracker="bytetrack.yaml", persist=True)
+            results = model.track(frame, imgsz=480, conf=0.6, verbose=False, tracker="botsort.yaml", persist=True)
             extract_result(results, prev_data, curr_time, frame, debug=debug)
-            fall_detection(prev_data, curr_time, frame, debug=debug)
-        
+            utils.fall_detection(prev_data, curr_time, frame, debug=debug)
         
         
         
@@ -319,7 +250,7 @@ def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, sh
     cv2.destroyAllWindows()
 
 
-def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, vid_height=640, show_frame=True, manual_move=False, interval=0, debug=False):
+def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=480, vid_height=480, show_frame=True, manual_move=False, interval=0, debug=False, save_video=False):
     """ Runs inference on video without threading """    
     # load pretrained model
     model = YOLO("yolo-weights/yolov8n-pose.pt")
@@ -329,9 +260,11 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, vid_width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, vid_height)
     
+    
     # save video
-    fourcc = cv2.VideoWriter_fourcc('M','J','P','G')
-    video_output = cv2.VideoWriter('demo-3.avi',  fourcc, 30, (int(cap.get(3)),int(cap.get(4)))) 
+    if save_video == True:
+        fourcc = cv2.VideoWriter_fourcc('M','J','P','G')
+        video_output = cv2.VideoWriter('demo-3.avi',  fourcc, 30, (int(cap.get(3)),int(cap.get(4)))) 
 
     
     # dictionary to store prev frame data for determining action
@@ -347,6 +280,7 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
         ret, frame = cap.read()
         if not ret:
             break
+        frame = cv2.resize(frame, (vid_width,vid_height))
         
         # track time for interval and fps
         curr_time = time.time()
@@ -367,7 +301,8 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
             # frame = results[0].plot()
             
             extract_result(results, prev_data, curr_time, frame, debug=debug)
-            fall_detected = fall_detection(prev_data, curr_time, frame, debug=debug)
+            # fall_detected, fall_conf = utils.fall_detection(prev_data, curr_time, frame, debug=debug)
+            fall_detected, fall_conf = utils.fall_detection_v2(prev_data, curr_time, frame, debug=debug)
         
         for prev_data_key, prev_data_value in prev_data.copy().items():
             try:
@@ -377,8 +312,8 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
                 cv2.putText(frame, temp_text, (draw_point[0]+10, draw_point[1]+20),  cv2.FONT_HERSHEY_PLAIN,1.5,(155,200,0),2)
             except:
                 pass
-            
-        if fall_detected:
+
+        if fall_detected and fall_conf>0.5:
             cv2.putText(frame, "Fall Detected", (20,30),  cv2.FONT_HERSHEY_PLAIN,2,(0,0,245),3)
         
         # track fps and draw to frame
@@ -386,7 +321,8 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
         # cv2.putText(frame, str(int(fps)), (30,30),  cv2.FONT_HERSHEY_PLAIN,2,(225,0,0),2)
         # prev_time_fps = curr_time
         
-        video_output.write(frame)
+        if save_video == True:
+            video_output.write(frame)
         
         # show frame to screen
         if show_frame:
@@ -394,7 +330,7 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
         
         
         # wait for user key
-        key = cv2.waitKey(15)
+        key = cv2.waitKey(5)
         if manual_move:
             key = cv2.waitKey(0)
         # press esc to quit
@@ -403,7 +339,8 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=640, v
         
     # cleanup
     cap.release()
-    video_output.release()
+    if save_video == True:
+        video_output.release()
     cv2.destroyAllWindows()
 
 

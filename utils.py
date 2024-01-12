@@ -11,14 +11,15 @@ def get_args():
     # user settings
     parser.add_argument("--src", type=str, default='./test-data/videos/fall-1.mp4', help="Video file location (eg. ./test-data/videos/fall-1.mp4)")
     parser.add_argument("--show", type=int, default=1, help="Whether to show camera to screen, 0 to hide 1 to show.")
-    parser.add_argument("--width", type=int, default=640, help="Input video width. (eg. 480)")
+    parser.add_argument("--width", type=int, default=480, help="Input video width. (eg. 480)")
     parser.add_argument("--height", type=int, default=480, help="Input video height (eg. 480)")
     parser.add_argument("--conf_score", type=float, default=0.5, help="Confidence score threshold (eg. 0.7)")
     parser.add_argument("--interval", type=float, default=0, help="Interval in seconds to run inference (eg. 2)")
     parser.add_argument("--manual_frame", type=float, default=0, help="Set this to 1 if you want to press 'n' key to advance each video frame.")
     parser.add_argument("--type", type=int, default=0, help="Specifies whether input is image or video (0 for video 1 for image). Default is video (0).")
     parser.add_argument("--debug", type=int, default=0, help="Whether to print some debug info. Default is 0 (no debug info), 1 means print debug info.")
-
+    parser.add_argument("--save_vid", type=int, default=0, help="Whether to save video. Default is 0 (no save), 1 means save video.")
+    
     args = parser.parse_args()
     return args
 
@@ -135,3 +136,190 @@ def determine_state(phi=None, alpha=None, ratio=None, beta=None, theta=None):
         else:
             return "lying down"
             # raise Exception("invalid theta angle")
+            
+def fall_detection(prev_data, curr_time,frame=None, debug=False):
+    """ 
+    Fall detection algorithm using previous 3 frame data.
+    
+    Input:
+    - prev_data: dictionary of previous frame data
+    - curr_time: current time
+    - frame: frame to draw on (optional)
+    
+    Output:
+    - fall_detected: boolean indicating whether fall detected
+    - fall_conf: confidence score of fall detection (still tweaking)
+    
+    """
+    fall_detected = False
+    fall_conf = 0
+    angle_threshold = 50
+    shoulder_threshold = 0
+    hip_threshold = 22
+    # fall detection using previous frames
+    for key, value in prev_data.copy().items():
+        # detect fall from spine vector in past 3 frames
+        if len(value['spine_vector']) == 3:
+            # calculate angles between spine vectors
+            fall_angle1 = angle_between(value['spine_vector'][0], value['spine_vector'][1])
+            fall_angle2 = angle_between(value['spine_vector'][1], value['spine_vector'][2])
+            fall_angle3 = angle_between(value['spine_vector'][0], value['spine_vector'][2])
+            max_angle = max(fall_angle1, fall_angle2, fall_angle3)
+            # calculate difference between hips, large difference likely indicates fall
+            hip_diff1 = abs(prev_data[key]["hips"][0][1] - prev_data[key]["hips"][1][1])
+            hip_diff2 = abs(prev_data[key]["hips"][1][1] - prev_data[key]["hips"][2][1])
+            hip_diff3 = abs(prev_data[key]["hips"][0][1] - prev_data[key]["hips"][2][1])
+            max_hip_diff = max(hip_diff1, hip_diff2, hip_diff3)
+            # calculate difference between shoulders, large difference likely indicates fall
+            shoulder_diff1 = prev_data[key]["shoulders"][0][1] - prev_data[key]["shoulders"][1][1]
+            shoulder_diff2 = prev_data[key]["shoulders"][1][1] - prev_data[key]["shoulders"][2][1]
+            shoulder_diff3 = prev_data[key]["shoulders"][0][1] - prev_data[key]["shoulders"][2][1]
+            min_shoulder_diff = min(shoulder_diff1, shoulder_diff2, shoulder_diff3)
+            
+            state = prev_data[key]['state'][-1]
+            
+            
+            # large angle somewhere between spine vector likely indicates fall
+            if ((max_angle>angle_threshold and min_shoulder_diff<=shoulder_threshold) or \
+                (min_shoulder_diff<-100 and max_angle>30) or \
+                    (max_angle>23 and min_shoulder_diff<-30 and max_hip_diff>50)) and \
+                        state!="standing":
+                # if hip changed a lot, likely indicates fall
+                if max_hip_diff>hip_threshold:
+                    fall_detected = True
+                    # random confidence, need to adjust
+                    fall_conf = min(1, max(0.7, 0.4*max_angle/80 + 0.4*max_hip_diff/50))
+                    print(f"\nHigh Probability of Person {key} Fall Detected!!")
+                                        
+                    # debug stuff
+                    if debug:
+                        print(f'Confidence: {fall_conf}')
+                        print(f'State: {state}')
+                        print(f"Hip Diffs: {max_hip_diff}, Shoulder diffs: {min_shoulder_diff}")
+                        print(f'angles: {fall_angle1}, {fall_angle2}, {fall_angle3}')
+                        print(f'spine: {prev_data[key]["spine_vector"]}')
+                        print(f'hips: {prev_data[key]["hips"]}')
+                        print(f'shoulders: {prev_data[key]["shoulders"]}')
+                        print()
+                        # cv2.putText(frame, "Fall Detected", (prev_data[key]["hips"][2][0]+30, prev_data[key]["hips"][2][1]+50),  cv2.FONT_HERSHEY_PLAIN,2,(245,0,0),2)
+                    
+                    # remove data from prev_data to avoid multiple detections
+                    prev_data[key]['spine_vector'] = prev_data[key]['spine_vector'][3:]
+                    prev_data[key]['hips'] = prev_data[key]['hips'][3:]
+                    prev_data[key]['shoulders'] = prev_data[key]['shoulders'][3:]
+                    return fall_detected, fall_conf
+                # otherwise spine changed a lot but likely no fall
+                else:
+                    fall_detected = True
+                    # random confidence, need to adjust
+                    fall_conf = min(0.4, 0.35*max_angle/80 + 0.35*max_hip_diff/50)
+                    print(f"Low Probability of Person {key} Fall Detected.")
+                    if debug:
+                        print(f'Confidence: {fall_conf}')
+                        print(f'State: {state}')
+                        print(f"Hip Diffs: {max_hip_diff}, Shoulder diffs: {min_shoulder_diff}")
+                        print(f'angles: {fall_angle1}, {fall_angle2}, {fall_angle3}')
+                        print(f'spine: {prev_data[key]["spine_vector"]}')
+                        print(f'hips: {prev_data[key]["hips"]}')
+                        print()
+                    return fall_detected, fall_conf
+            
+        # delete data if not checked for a while
+        time_till_delete = 2
+        if curr_time -  value['last_check'] > time_till_delete:
+            if debug:
+                print(f"ID {key} hasn't checked over {time_till_delete} seconds")
+                print(f'Deleting ID {key}')
+            del prev_data[key]
+    
+    return fall_detected, fall_conf
+
+
+
+def fall_detection_v2(prev_data, curr_time,frame=None, debug=False):
+    """ 
+    Fall detection algorithm using previous 3 frame data.
+    
+    Input:
+    - prev_data: dictionary of previous frame data
+    - curr_time: current time
+    - frame: frame to draw on (optional)
+    
+    Output:
+    - fall_detected: boolean indicating whether fall detected
+    - fall_conf: confidence score of fall detection (still tweaking)
+    
+    """
+    fall_detected = False
+    fall_conf = 0
+    angle_threshold = 50
+    shoulder_threshold = 0
+    hip_threshold = 22
+    # fall detection using previous frames
+    for key, value in prev_data.copy().items():
+        # detect fall from spine vector in past 3 frames
+        if len(value['spine_vector']) == 3:
+            # calculate angles between spine vectors
+            fall_angle1 = angle_between(value['spine_vector'][0], value['spine_vector'][1])
+            fall_angle2 = angle_between(value['spine_vector'][1], value['spine_vector'][2])
+            fall_angle3 = angle_between(value['spine_vector'][0], value['spine_vector'][2])
+            max_angle = max(fall_angle1, fall_angle2, fall_angle3)
+            # calculate difference between hips, large difference likely indicates fall
+            hip_diff1 = abs(prev_data[key]["hips"][0][1] - prev_data[key]["hips"][1][1])
+            hip_diff2 = abs(prev_data[key]["hips"][1][1] - prev_data[key]["hips"][2][1])
+            hip_diff3 = abs(prev_data[key]["hips"][0][1] - prev_data[key]["hips"][2][1])
+            max_hip_diff = max(hip_diff1, hip_diff2, hip_diff3)
+            # calculate difference between shoulders, large difference likely indicates fall
+            shoulder_diff1 = prev_data[key]["shoulders"][0][1] - prev_data[key]["shoulders"][1][1]
+            shoulder_diff2 = prev_data[key]["shoulders"][1][1] - prev_data[key]["shoulders"][2][1]
+            shoulder_diff3 = prev_data[key]["shoulders"][0][1] - prev_data[key]["shoulders"][2][1]
+            min_shoulder_diff = min(shoulder_diff1, shoulder_diff2, shoulder_diff3)
+            
+            state = prev_data[key]['state'][-1]
+            if state == "standing":
+                state_conf = -2
+            else:
+                state_conf = 2
+            
+            fall_conf = max_angle/angle_threshold + max_hip_diff/30 + min_shoulder_diff/-40 + state_conf
+            
+            # print(f'Fall Conf: {fall_conf}')
+            
+            if fall_conf>8:
+                fall_detected = True
+                print(f"\nHigh Probability of Person {key} Fall Detected!!")
+                # remove data from prev_data to avoid multiple detections
+                prev_data[key]['spine_vector'] = prev_data[key]['spine_vector'][3:]
+                prev_data[key]['hips'] = prev_data[key]['hips'][3:]
+                prev_data[key]['shoulders'] = prev_data[key]['shoulders'][3:]
+                if debug:
+                    print(f'Confidence: {fall_conf}')
+                    print(f'State: {state}')
+                    print(f"Hip Diffs: {max_hip_diff}, Shoulder diffs: {min_shoulder_diff}")
+                    print(f'angles: {fall_angle1}, {fall_angle2}, {fall_angle3}')
+                    print(f'spine: {prev_data[key]["spine_vector"]}')
+                    print(f'hips: {prev_data[key]["hips"]}')
+                    print()
+            elif fall_conf<=8 and fall_conf>5:
+                fall_detected = True
+                print(f"Low Probability of Person {key} Fall Detected.")
+                if debug:
+                    print(f'Confidence: {fall_conf}')
+                    print(f'State: {state}')
+                    print(f"Hip Diffs: {max_hip_diff}, Shoulder diffs: {min_shoulder_diff}")
+                    print(f'angles: {fall_angle1}, {fall_angle2}, {fall_angle3}')
+                    print(f'spine: {prev_data[key]["spine_vector"]}')
+                    print(f'hips: {prev_data[key]["hips"]}')
+                    print()
+            
+            fall_conf = min(1,fall_conf/15)
+            
+        # delete data if not checked for a while
+        time_till_delete = 2
+        if curr_time -  value['last_check'] > time_till_delete:
+            if debug:
+                print(f"ID {key} hasn't checked over {time_till_delete} seconds")
+                print(f'Deleting ID {key}')
+            del prev_data[key]
+    
+    return fall_detected, fall_conf
