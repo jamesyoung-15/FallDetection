@@ -22,8 +22,8 @@ if __name__ == '__main__':
     # threaded webcam inference
     elif "/dev/" in media_source:
         yolo_action_detect.stream_inference(vid_source=media_source, vid_width=vid_width, vid_height=vid_height, 
-                                            show_frame=show_frame, manual_move=manual_move, interval=interval, debug=debug)
+                                            show_frame=show_frame, manual_move=manual_move, interval=interval, debug=debug, conf_threshold=conf_threshold, save_video=save_video)
     # normal video inference
     else:
         yolo_action_detect.video_inference(vid_source=media_source, vid_width=vid_width, vid_height=vid_height, 
-                                           show_frame=show_frame, manual_move=manual_move, interval=interval, debug=debug)
+                                           show_frame=show_frame, manual_move=manual_move, interval=interval, debug=debug, conf_threshold=conf_threshold, save_video=save_video)

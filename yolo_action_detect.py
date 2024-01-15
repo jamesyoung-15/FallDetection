@@ -128,7 +128,7 @@ def extract_keypts(person_num, keypts, frame, conf_threshold=0.5, track_id=0, de
     # return these for storing fall detection data
     return spine_vector, legs_vector, hips, shoulder, state
 
-def extract_result(results, prev_data, curr_time, frame, debug=False):
+def extract_result(results, prev_data, curr_time, frame, debug=False, conf_threshold=0.5):
     """ 
     Go through Yolo pose results, calls extract_keypts to get keypoints and 
     relevant vector/angles and state, then appends relevant information to prev_data dictionary.
@@ -157,7 +157,7 @@ def extract_result(results, prev_data, curr_time, frame, debug=False):
             # for each person
             for i in range(num_people):
                 id = int(track_id[i])
-                spine_vector, leg_vector, hips, shoulders, state = extract_keypts(i, keypts, frame, conf_threshold=0.5,track_id=id, debug=debug)
+                spine_vector, leg_vector, hips, shoulders, state = extract_keypts(i, keypts, frame, conf_threshold=conf_threshold,track_id=id, debug=debug)
                 if spine_vector:
                     # append spine vector to prev_data
                     if prev_data.get(id) == None:
@@ -181,7 +181,8 @@ def extract_result(results, prev_data, curr_time, frame, debug=False):
 
         
 
-def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, show_frame=True, manual_move=False, interval=0, debug=False):
+def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, show_frame=True, manual_move=False, interval=0, 
+                     debug=False, conf_threshold=0.5, save_video=False):
     """ Runs inference with threading, for usb camera stream.  """
     print("Running inference with threading on usb camera.")    
     # load pretrained model
@@ -225,7 +226,7 @@ def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, sh
             num_frames_elapsed = 0
             # inference
             # results = model.predict(frame, imgsz=640, conf=0.5, verbose=False)
-            results = model.track(frame, imgsz=480, conf=0.6, verbose=False, tracker="botsort.yaml", persist=True)
+            results = model.track(frame, imgsz=480, conf=conf_threshold, verbose=False, tracker="botsort.yaml", persist=True)
             extract_result(results, prev_data, curr_time, frame, debug=debug)
             fall_detected, fall_conf = utils.fall_detection_v2(prev_data, curr_time, frame, debug=debug)
         
@@ -263,7 +264,8 @@ def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, sh
     cv2.destroyAllWindows()
 
 
-def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=480, vid_height=480, show_frame=True, manual_move=False, interval=0, debug=False, save_video=False):
+def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=480, vid_height=480, 
+                    show_frame=True, manual_move=False, interval=0, debug=False, save_video=False, conf_threshold=0.5):
     """ Runs inference on video without threading """    
     # load pretrained model
     model = YOLO("yolo-weights/yolov8n-pose.pt")
@@ -308,16 +310,16 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=480, v
             
             # inference
             # results = model.predict(frame, imgsz=640, conf=0.5, verbose=False)
-            results = model.track(frame, imgsz=640, conf=0.6, verbose=False, tracker="bytetrack.yaml", persist=True)
+            results = model.track(frame, imgsz=640, conf=conf_threshold, verbose=False, tracker="bytetrack.yaml", persist=True)
 
             # Visualize the results on the frame
             # frame = results[0].plot()
             
-            extract_result(results, prev_data, curr_time, frame, debug=debug)
+            extract_result(results, prev_data, curr_time, frame, debug=debug, conf_threshold=conf_threshold)
             # fall_detected, fall_conf = utils.fall_detection(prev_data, curr_time, frame, debug=debug)
             fall_detected, fall_conf = utils.fall_detection_v2(prev_data, curr_time, frame, debug=debug)
             
-            if fall_detected and fall_conf<=0.5 and fall_conf>0.3:
+            if fall_detected and fall_conf<0.7 and fall_conf>0.3:
                 print(f"Fall detected with low confidence: {fall_conf}")
         
         for prev_data_key, prev_data_value in prev_data.copy().items():
@@ -329,7 +331,7 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=480, v
             except:
                 pass
 
-        if fall_detected and fall_conf>0.5:
+        if fall_detected and fall_conf>=0.7:
             cv2.putText(frame, "Fall Detected", (20,30),  cv2.FONT_HERSHEY_PLAIN,2,(0,0,245),3)
 
         # track fps and draw to frame
@@ -346,7 +348,7 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=480, v
         
         
         # wait for user key
-        key = cv2.waitKey(5)
+        key = cv2.waitKey(25)
         if manual_move:
             key = cv2.waitKey(0)
         # press esc to quit

@@ -51,11 +51,11 @@ My notes.
 
 - Le2i
   - Coffee Room 01
-    - Correct: 2,3,4,7,10,9,11,12,13,16,17,18,19,20
-    - Incorrect: 1,5,6,8,14,15
-    - Accuracy: 0.6
+    - Incorrect: 5 8 14 15 26 29 30 33 35 36 37 44
+    - Accuracy: 0.75
   - Coffee Room 02
-    - 
+    - Incorrect: 54 57 59 62
+    - Accuracy: 0.8
 
 ## Datasets
   - [small kaggle dataset w/ 3 classes (sit, stand, fall)](https://www.kaggle.com/datasets/uttejkumarkandagatla/fall-detection-dataset)
