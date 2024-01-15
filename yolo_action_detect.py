@@ -205,7 +205,8 @@ def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, sh
     prev_time = 0 # for tracking interval to execute predict with Yolo model
     prev_time_fps = 0 # for fps counting
     num_frames_elapsed = 0
-    
+    fall_detected = False
+    fall_conf = 0
     while True:
         # read frame
         ret, frame = cap.read()
@@ -226,7 +227,19 @@ def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, sh
             # results = model.predict(frame, imgsz=640, conf=0.5, verbose=False)
             results = model.track(frame, imgsz=480, conf=0.6, verbose=False, tracker="botsort.yaml", persist=True)
             extract_result(results, prev_data, curr_time, frame, debug=debug)
-            utils.fall_detection(prev_data, curr_time, frame, debug=debug)
+            fall_detected, fall_conf = utils.fall_detection_v2(prev_data, curr_time, frame, debug=debug)
+        
+        for prev_data_key, prev_data_value in prev_data.copy().items():
+            try:
+                draw_point = prev_data[prev_data_key]['hips'][-1]
+                temp_state = prev_data[prev_data_key]['state'][-1]
+                temp_text = "ID " + str(prev_data_key) + ": " + temp_state
+                cv2.putText(frame, temp_text, (draw_point[0]+10, draw_point[1]+20),  cv2.FONT_HERSHEY_PLAIN,1.5,(155,200,0),2)
+            except:
+                pass
+
+        if fall_detected and fall_conf>0.5:
+            cv2.putText(frame, "Fall Detected", (20,30),  cv2.FONT_HERSHEY_PLAIN,2,(0,0,245),3)
         
         
         
@@ -303,6 +316,9 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=480, v
             extract_result(results, prev_data, curr_time, frame, debug=debug)
             # fall_detected, fall_conf = utils.fall_detection(prev_data, curr_time, frame, debug=debug)
             fall_detected, fall_conf = utils.fall_detection_v2(prev_data, curr_time, frame, debug=debug)
+            
+            if fall_detected and fall_conf<=0.5 and fall_conf>0.3:
+                print(f"Fall detected with low confidence: {fall_conf}")
         
         for prev_data_key, prev_data_value in prev_data.copy().items():
             try:
@@ -315,7 +331,7 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=480, v
 
         if fall_detected and fall_conf>0.5:
             cv2.putText(frame, "Fall Detected", (20,30),  cv2.FONT_HERSHEY_PLAIN,2,(0,0,245),3)
-        
+
         # track fps and draw to frame
         # fps = 1/(curr_time-prev_time_fps)
         # cv2.putText(frame, str(int(fps)), (30,30),  cv2.FONT_HERSHEY_PLAIN,2,(225,0,0),2)

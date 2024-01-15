@@ -302,8 +302,8 @@ def fall_detection_v2(prev_data, curr_time,frame=None, debug=False):
                     print()
             elif fall_conf<=8 and fall_conf>5:
                 fall_detected = True
-                print(f"Low Probability of Person {key} Fall Detected.")
                 if debug:
+                    print(f"Low Probability of Person {key} Fall Detected.")
                     print(f'Confidence: {fall_conf}')
                     print(f'State: {state}')
                     print(f"Hip Diffs: {max_hip_diff}, Shoulder diffs: {min_shoulder_diff}")
