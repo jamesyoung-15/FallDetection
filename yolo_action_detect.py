@@ -120,7 +120,8 @@ def extract_keypts(person_num, keypts, frame, conf_threshold=0.5, track_id=0, de
     state = None
     # if at least have phi, alpha, and ratio, then can determine state
     if spine_x_axis_phi and legs_y_axis_alpha and spine_leg_ratio:
-        state = utils.determine_state(theta=spine_leg_theta, phi=spine_x_axis_phi, alpha=legs_y_axis_alpha, beta=ankle_beta ,ratio=spine_leg_ratio)
+        state = utils.determine_state(theta=spine_leg_theta, phi=spine_x_axis_phi, alpha=legs_y_axis_alpha, beta=ankle_beta ,ratio=spine_leg_ratio,
+                                      shoulder=shoulder, knees=knees)
         if debug:
             print(f'State: {state}')
         # cv2.putText(frame, state, (hips[0]+30, hips[1]+20),  cv2.FONT_HERSHEY_PLAIN,2,(155,200,0),2)
@@ -228,7 +229,7 @@ def stream_inference(vid_source="/dev/video0", vid_width=640, vid_height=640, sh
             # results = model.predict(frame, imgsz=640, conf=0.5, verbose=False)
             results = model.track(frame, imgsz=480, conf=conf_threshold, verbose=False, tracker="botsort.yaml", persist=True)
             extract_result(results, prev_data, curr_time, frame, debug=debug)
-            fall_detected, fall_conf = utils.fall_detection_v2(prev_data, curr_time, frame, debug=debug)
+            fall_detected, fall_conf = utils.fall_detection_v2(prev_data, curr_time, debug=debug)
         
         for prev_data_key, prev_data_value in prev_data.copy().items():
             try:
@@ -268,7 +269,7 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=480, v
                     show_frame=True, manual_move=False, interval=0, debug=False, save_video=False, conf_threshold=0.5):
     """ Runs inference on video without threading """    
     # load pretrained model
-    model = YOLO("yolo-weights/yolov8n-pose.pt")
+    model = YOLO("yolo-weights/yolov8s-pose.pt")
 
     # non threaded usb camera stream
     cap = cv2.VideoCapture(vid_source)
@@ -295,7 +296,7 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=480, v
         ret, frame = cap.read()
         if not ret:
             break
-        frame = cv2.resize(frame, (vid_width,vid_height))
+        # frame = cv2.resize(frame, (vid_width,vid_height))
         
         # track time for interval and fps
         curr_time = time.time()
@@ -310,14 +311,14 @@ def video_inference(vid_source="./test-data/videos/fall-1.mp4", vid_width=480, v
             
             # inference
             # results = model.predict(frame, imgsz=640, conf=0.5, verbose=False)
-            results = model.track(frame, imgsz=640, conf=conf_threshold, verbose=False, tracker="bytetrack.yaml", persist=True)
-
+            # results = model.track(frame, imgsz=480, conf=conf_threshold, verbose=False, tracker="bytetrack.yaml", persist=True)
+            results = model.track(frame, conf=0.5, verbose=False, persist=True, tracker="bytetrack.yaml")
             # Visualize the results on the frame
-            # frame = results[0].plot()
+            frame = results[0].plot()
             
             extract_result(results, prev_data, curr_time, frame, debug=debug, conf_threshold=conf_threshold)
             # fall_detected, fall_conf = utils.fall_detection(prev_data, curr_time, frame, debug=debug)
-            fall_detected, fall_conf = utils.fall_detection_v2(prev_data, curr_time, frame, debug=debug)
+            fall_detected, fall_conf = utils.fall_detection_v2(prev_data, curr_time, debug=debug)
             
             if fall_detected and fall_conf<0.7 and fall_conf>0.3:
                 print(f"Fall detected with low confidence: {fall_conf}")

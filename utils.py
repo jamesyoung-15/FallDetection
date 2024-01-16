@@ -92,11 +92,11 @@ def draw_vector(image, start_point, vector, color=(255, 255, 255), thickness=5):
     cv2.line(image, tuple(start_point), end_point, color, thickness)
 
 
-def determine_state(phi=None, alpha=None, ratio=None, beta=None, theta=None):
+def determine_state(phi=None, alpha=None, ratio=None, beta=None, theta=None, shoulder=None, knees=None):
     """ 
     Test function for checking action state. Still trying out. 
     
-    Input:
+    Args:
     - theta: angle between spine and legs
     - alpha: angle between legs and y-axis along hips
     - phi: angle between spine and x-axis along hips
@@ -119,34 +119,37 @@ def determine_state(phi=None, alpha=None, ratio=None, beta=None, theta=None):
             return "sitting"
             # raise Exception("invalid theta angle")
     else:
+        # shoulder below knees usually means person is lying down
+        if (shoulder and knees) and (shoulder[1]>knees[1]):
+            return "lying down"
         # legs super close to hips usually means person is sitting (eg. cross legged, sitting directly in front of camera, etc.)
-        if ratio!=None and ratio>2:
+        elif ratio!=None and ratio>2:
             if phi != None and (phi<=35 or phi>=145):
                 return "lying down"
             return "sitting"
         # alpha<=30 means legs are vertical, usually means person is standing/walking
-        if alpha != None and alpha<=27 and beta>=65 and beta<=125:
+        elif (alpha != None and alpha<31) and (beta>=65 and beta<=125):
             return "standing"
         # (phi<=25 or phi>=155) means spine is parallel to ground, usually means person is lying down
-        if phi != None and (phi<=35 or phi>=145):
+        elif phi != None and (phi<=35 or phi>=145):
             return "lying down"
         # otherwise most likely sitting
-        if theta<160:
+        elif theta<160:
             return "sitting"
         else:
             return "lying down"
             # raise Exception("invalid theta angle")
             
-def fall_detection(prev_data, curr_time,frame=None, debug=False):
+def fall_detection(prev_data, curr_time, debug=False):
     """ 
     Fall detection algorithm using previous 3 frame data.
     
-    Input:
+    Args:
     - prev_data: dictionary of previous frame data
     - curr_time: current time
     - frame: frame to draw on (optional)
     
-    Output:
+    Return:
     - fall_detected: boolean indicating whether fall detected
     - fall_conf: confidence score of fall detection (still tweaking)
     
@@ -236,16 +239,16 @@ def fall_detection(prev_data, curr_time,frame=None, debug=False):
 
 
 
-def fall_detection_v2(prev_data, curr_time,frame=None, debug=False):
+def fall_detection_v2(prev_data, curr_time, debug=False):
     """ 
     Fall detection algorithm using previous 3 frame data.
     
-    Input:
+    Args:
     - prev_data: dictionary of previous frame data
-    - curr_time: current time
-    - frame: frame to draw on (optional)
+    - curr_time: current time, used to delete data if not checked for a while
+    - debug: whether to print debug info
     
-    Output:
+    Return:
     - fall_detected: boolean indicating whether fall detected
     - fall_conf: confidence score of fall detection (still tweaking)
     
@@ -309,7 +312,6 @@ def fall_detection_v2(prev_data, curr_time,frame=None, debug=False):
                 
             fall_conf = min(1,(angle_conf + hip_conf + shoulder_conf+ state_conf)/10)
             
-            
             if fall_conf>=0.7:
                 fall_detected = True
                 print(f"\nHigh Probability of Person {key} Fall Detected!!")
@@ -330,6 +332,16 @@ def fall_detection_v2(prev_data, curr_time,frame=None, debug=False):
                 fall_detected = True
                 if debug:
                     print(f"Low Probability of Person {key} Fall Detected.")
+                    print(f'Confidence: {fall_conf}')
+                    print(f'State: {state}')
+                    print(f"Hip Diffs: {max_hip_diff}, Shoulder diffs: {min_shoulder_diff}")
+                    print(f'angles: {fall_angle1}, {fall_angle2}, {fall_angle3}')
+                    print(f'spine: {prev_data[key]["spine_vector"]}')
+                    print(f'hips: {prev_data[key]["hips"]}')
+                    print()
+            elif fall_conf>.2:
+                if debug:
+                    print(f"Very Low Probability of Person {key} Fall Detected.")
                     print(f'Confidence: {fall_conf}')
                     print(f'State: {state}')
                     print(f"Hip Diffs: {max_hip_diff}, Shoulder diffs: {min_shoulder_diff}")

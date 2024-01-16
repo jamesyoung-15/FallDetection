@@ -137,7 +137,7 @@ def main():
         ret, frame = cap.read()
         if not ret:
             break
-        
+        frame = cv2.resize(frame, (cap_width, cap_height))
         image_width, image_height = frame.shape[1], frame.shape[0]
         
         # Resize and pad the image to keep the aspect ratio and fit the expected size.
@@ -160,7 +160,7 @@ def main():
         cv2.imshow("Image",frame)
 
         # press q to exit
-        if cv2.waitKey(10) & 0xff == ord('q'):
+        if cv2.waitKey(1) & 0xff == ord('q'):
             break 
     
     cap.release()
