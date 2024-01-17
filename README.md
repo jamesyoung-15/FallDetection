@@ -2,9 +2,9 @@
 My internship project/mini-prototype at [Intelligent Design Technology Limited](https://intelligentdesign.hk/english/) that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera image input. The project is aimed for a elderly home robot that uses Raspberry PI. This project was done within a month so improvements are needed for more robustness. 
 
 <p align="middle">
-    <img src="./media/demo-1.gif" width="30%"/>
-    <img src="./media/demo-2.gif" width="30%"/>
-    <img src="./media/demo-3.gif" width="30%"/>
+    <img src="./media/demo-1.gif" width="30%" height="300px"/>
+    <img src="./media/demo-2.gif" width="30%" height="300px"/>
+    <img src="./media/demo-3.gif" width="30%" height="300px"/>
 </p>
 
 

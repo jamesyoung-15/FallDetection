@@ -4,3 +4,4 @@ models/
 .venv/
 le2i/
 yolov8s*
+action_dataset/
