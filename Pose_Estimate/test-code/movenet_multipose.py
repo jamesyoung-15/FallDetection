@@ -120,7 +120,7 @@ def main():
     # Initialize the TFLite interpreter
     # model_url = "https://tfhub.dev/google/movenet/multipose/lightning/1"
     input_size = 256
-    model_path = "../models/movenet-multipose-lightning-f16.tflite"
+    model_path = "../../models/tflite/movenet_multipose.tflite"
     interpreter = tf.lite.Interpreter(model_path=model_path)
     interpreter.allocate_tensors()
 
