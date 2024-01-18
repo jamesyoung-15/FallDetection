@@ -134,7 +134,7 @@ def main():
       '--model',
       help='Name of video classification model.',
       required=False,
-      default='movinet_a0_float16.tflite')
+      default='movinet_a0_int8.tflite')
   parser.add_argument(
       '--label',
       help='Name of video classification label.',
