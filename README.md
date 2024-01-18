@@ -1,5 +1,5 @@
 # Simple Action Detection
-My internship project/mini-prototype at [Intelligent Design Technology Limited](https://intelligentdesign.hk/english/) that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera image input. The project is aimed for a elderly home robot that uses Raspberry PI. This project was done within a month so improvements are needed for more robustness. 
+My internship project/mini-prototype at [Intelligent Design Technology Limited](https://intelligentdesign.hk/english/) that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera image input. The project is aimed for a elderly home robot that uses Raspberry PI.
 
 <p align="middle">
     <img src="./media/demo-1.gif" width="30%" height="200px"/>
@@ -8,7 +8,7 @@ My internship project/mini-prototype at [Intelligent Design Technology Limited](
 </p>
 
 
-
+Note: This project was done within a month so improvements are needed for more robustness. 
 
 ## Usage
 ### Install Dependencies
