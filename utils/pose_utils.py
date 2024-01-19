@@ -23,7 +23,7 @@ def get_args():
                                                                     1 for Movenet Multi Lightning, 2 for Movenet Single Lightning, \
                                                                         3 for Blazenet (Mediapipe).")
     parser.add_argument("--resize_frame", type=int, default=0, help="Whether to resize frame. Default is 0 (no resize), 1 means resize frame.")
-    
+    parser.add_argument("--delay", type=int, default=1, help="Delay in ms for cv2.waitkey(delay) in int.")
     args = parser.parse_args()
     return args
 

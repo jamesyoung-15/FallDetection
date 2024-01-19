@@ -42,6 +42,7 @@ def run(estimation_model: str, tracker_type: str, media_src: str, width: int, he
         'MoveNet MultiPose model.')
 
   # Initialize the pose estimator selected.
+  # estimation_model = 'models/tflite/' + estimation_model + '.tflite'
   if 'movenet_singlepose' in estimation_model:
     print("Using Movenet Singlepose (Lightning)")
     pose_detector = Movenet(estimation_model)

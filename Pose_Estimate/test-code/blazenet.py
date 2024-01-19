@@ -7,13 +7,15 @@ import argparse
 
 if __name__ == "__main__":
     
-    par = argparse.ArgumentParser(description='Human Fall Detection Demo.')
-    par.add_argument('-v', '--video', default="/dev/video0",  # required=True,  # default=2,
+    parser = argparse.ArgumentParser(description='Human Fall Detection Demo.')
+    parser.add_argument('-v', '--video', default="/dev/video0",  # required=True,  # default=2,
                         help='Source of camera or video file path.')
-    args = par.parse_args()
-    print(args)
+    parser.add_argument("--width", help='cap width', type=int, default=640)
+    parser.add_argument("--height", help='cap height', type=int, default=480)
+    args = parser.parse_args()
     vid_source = args.video
-    print(vid_source)
+    cap_width = args.width
+    cap_height = args.height
     
     
     pose_obj = PoseModule()

@@ -7,7 +7,8 @@ import time
 
 def video_inference(vid_source, model, vid_width, vid_height, 
                     show_frame=True, manual_move=False, interval=0, 
-                    debug=False, save_video=False, conf_threshold=0.5, resize=False):
+                    debug=False, save_video=False, conf_threshold=0.5, 
+                    delay=1,resize=False):
     """ 
     Performs pose estimation and fall detection on video (can be usb camera or video file).
     
@@ -32,6 +33,7 @@ def video_inference(vid_source, model, vid_width, vid_height,
     num_frames_elapsed = 0
     fall_detected = False
     fall_conf = 0
+    prev_time = 0
     
     while True:
         # read frame
@@ -50,6 +52,7 @@ def video_inference(vid_source, model, vid_width, vid_height,
             model.yolo_predict(prev_data, frame, curr_time)
             fall_detected, fall_conf = fall_detector.fall_detection(prev_data)
             
+            
         
         # write to frame if fall detected
         if fall_detected and fall_conf>=0.7:
@@ -67,13 +70,19 @@ def video_inference(vid_source, model, vid_width, vid_height,
         
         if save_video == True:
             video_output.write(frame)
-            
+        
+        # fps track
+        fps = 1/(curr_time-prev_time)
+        prev_time = curr_time
+        # print fps
+        cv2.putText(frame, str(int(fps)), (50,50),  cv2.FONT_HERSHEY_PLAIN,3,(255,0,0),3)
+        
         # show frame to screen
         if show_frame:
             cv2.imshow('Yolo Pose Test', frame)
             
         # wait for user key
-        key = cv2.waitKey(25)
+        key = cv2.waitKey(delay)
         if manual_move:
             key = cv2.waitKey(0)
         # press esc to quit
@@ -121,7 +130,7 @@ def main():
     save_video = bool(args.save_vid)
     pose_model = args.pose_type
     resize = bool(args.resize_frame)
-
+    delay = args.delay
     # load model
     model = None
     if pose_model==1:
@@ -141,7 +150,7 @@ def main():
     else:
         video_inference(vid_source=media_source, model=model, vid_width=vid_width, vid_height=vid_height, 
                         show_frame=show_frame, manual_move=manual_move, interval=interval, 
-                        debug=debug, save_video=save_video, conf_threshold=conf_threshold, resize=resize)
+                        debug=debug, save_video=save_video, conf_threshold=conf_threshold, resize=resize, delay=delay)
 
 
 
