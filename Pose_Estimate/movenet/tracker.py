@@ -16,8 +16,8 @@
 import abc
 from typing import List, NamedTuple
 
-from data import Person
-from tracker_config import TrackerConfig
+from movenet.data import Person
+from movenet.tracker_config import TrackerConfig
 
 
 class Track(NamedTuple):

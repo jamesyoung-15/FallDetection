@@ -18,16 +18,16 @@ import time
 from typing import List
 
 import cv2
-from data import BodyPart
-from data import KeyPoint
-from data import Person
-from data import Point
-from data import Rectangle
+from movenet.data import BodyPart
+from movenet.data import KeyPoint
+from movenet.data import Person
+from movenet.data import Point
+from movenet.data import Rectangle
 import numpy as np
-from tracker import BoundingBoxTracker
-from tracker import KeypointTracker
-from tracker import TrackerConfig
-import utils
+from movenet.bounding_box_tracker import BoundingBoxTracker
+from movenet.keypoint_tracker import KeypointTracker
+from movenet.tracker import TrackerConfig
+import movenet.utils as utils
 
 # pylint: disable=g-import-not-at-top
 try:

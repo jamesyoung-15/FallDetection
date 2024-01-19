@@ -17,7 +17,7 @@ import math
 from typing import List, Tuple
 
 import cv2
-from data import Person
+from movenet.data import Person
 import numpy as np
 
 # map edges to a RGB color
@@ -79,6 +79,9 @@ def visualize(
     Image with keypoints and edges.
   """
   for person in list_persons:
+    if not person:
+        print("ok")
+        break
     if person.score < instance_threshold:
       continue
 
