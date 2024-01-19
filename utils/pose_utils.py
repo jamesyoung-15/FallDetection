@@ -25,6 +25,7 @@ def get_args():
     parser.add_argument("--resize_frame", type=int, default=0, help="Whether to resize frame. Default is 0 (no resize), 1 means resize frame.")
     parser.add_argument("--delay", type=int, default=1, help="Delay in ms for cv2.waitkey(delay) in int.")
     parser.add_argument("--fps", type=int, default=24, help="Set FPS for cv2 (only for usb camera).")
+    parser.add_argument("--benchmark", type=int, default=0, help="Record and print FPS after exit. 0 for false 1 for true.")
     args = parser.parse_args()
     return args
 

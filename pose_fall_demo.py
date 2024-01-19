@@ -36,8 +36,9 @@ def video_inference(vid_source, model, vid_width, vid_height,
     fall_detected = False
     fall_conf = 0
     prev_time = 0
-    start_time = time.time()
     total_frames = 0
+    start_time = time.time()
+    fps_start_time = time.time()
     
     while True:
         # read frame
@@ -78,10 +79,12 @@ def video_inference(vid_source, model, vid_width, vid_height,
             video_output.write(frame)
         
         # fps track
-        fps = 1/(curr_time-prev_time)
-        prev_time = curr_time
-        # print fps
-        cv2.putText(frame, str(int(fps)), (50,50),  cv2.FONT_HERSHEY_PLAIN,3,(255,0,0),3)
+        fps_frame_count = 5
+        if total_frames % fps_frame_count == 0:
+            fps_end_time = time.time()
+            fps = fps_frame_count = 5/(fps_end_time-fps_start_time)
+            fps_start_time = time.time()
+            cv2.putText(frame, str(int(fps)), (50,50),  cv2.FONT_HERSHEY_PLAIN,3,(255,0,0),3)
         
         # show frame to screen
         if show_frame:
@@ -99,7 +102,7 @@ def video_inference(vid_source, model, vid_width, vid_height,
     if benchmark:
         end_time = time.time()
         total_time = end_time - start_time
-        total_fps = total_frames/total_time
+        total_fps = total_frames/(total_time)
         print(f'Total Frames: {total_frames}, Total Time: {total_time}, Total FPS: {total_fps}')
     
     # cleanup
@@ -145,6 +148,7 @@ def main():
     resize = bool(args.resize_frame)
     delay = args.delay
     fps = args.fps
+    benchmark = bool(args.benchmark)
     
     # load model
     model = None
@@ -166,7 +170,7 @@ def main():
         video_inference(vid_source=media_source, model=model, vid_width=vid_width, vid_height=vid_height, 
                         show_frame=show_frame, manual_move=manual_move, interval=interval, 
                         debug=debug, save_video=save_video, conf_threshold=conf_threshold, 
-                        resize=resize, delay=delay, fps=fps)
+                        resize=resize, delay=delay, fps=fps, benchmark=benchmark)
 
 
 
