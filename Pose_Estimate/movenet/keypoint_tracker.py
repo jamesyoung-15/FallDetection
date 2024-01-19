@@ -16,9 +16,9 @@
 import math
 from typing import List
 
-from movenet.data import Person
-from movenet.tracker import Track
-from movenet.tracker import Tracker
+from Pose_Estimate.movenet.movenet_data import Person
+from Pose_Estimate.movenet.movenet_tracker import Track
+from Pose_Estimate.movenet.movenet_tracker import Tracker
 
 
 class KeypointTracker(Tracker):

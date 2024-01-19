@@ -18,25 +18,19 @@ import sys
 import time
 
 import cv2
-# from ml import Movenet
-from movenet.movenet_multi import MoveNetMultiPose
+from Pose_Estimate.movenet.movenet_single import Movenet
+from Pose_Estimate.movenet.movenet_multi import MoveNetMultiPose
 # from ml import Posenet
-import movenet.utils as utils
+import Pose_Estimate.movenet.movenet_utils as movenet_utils
 
 
-def run(estimation_model: str, tracker_type: str, classification_model: str,
-        label_file: str, camera_id: int, width: int, height: int) -> None:
+def run(estimation_model: str, tracker_type: str, media_src: str, width: int, height: int) -> None:
   """Continuously run inference on images acquired from the camera.
 
   Args:
     estimation_model: Name of the TFLite pose estimation model.
     tracker_type: Type of Tracker('keypoint' or 'bounding_box').
-    classification_model: Name of the TFLite pose classification model.
-      (Optional)
-    label_file: Path to the label file for the pose classification model. Class
-      names are listed one name per line, in the same order as in the
-      classification model output. See an example in the yoga_labels.txt file.
-    camera_id: The camera id to be passed to OpenCV.
+    media_src: The camera id to be passed to OpenCV.
     width: The width of the frame captured from the camera.
     height: The height of the frame captured from the camera.
   """
@@ -48,9 +42,9 @@ def run(estimation_model: str, tracker_type: str, classification_model: str,
         'MoveNet MultiPose model.')
 
   # Initialize the pose estimator selected.
-  if estimation_model in ['movenet_lightning', 'movenet_thunder']:
-    # pose_detector = Movenet(estimation_model)
-    pass
+  if 'movenet_singlepose' in estimation_model:
+    print("Using Movenet Singlepose (Lightning)")
+    pose_detector = Movenet(estimation_model)
   elif estimation_model == 'posenet':
     # pose_detector = Posenet(estimation_model)
     pass
@@ -65,7 +59,7 @@ def run(estimation_model: str, tracker_type: str, classification_model: str,
   start_time = time.time()
 
   # Start capturing video input from the camera
-  cap = cv2.VideoCapture(camera_id)
+  cap = cv2.VideoCapture(media_src)
   cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
   cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
@@ -75,16 +69,8 @@ def run(estimation_model: str, tracker_type: str, classification_model: str,
   text_color = (0, 0, 255)  # red
   font_size = 1
   font_thickness = 1
-  classification_results_to_show = 3
   fps_avg_frame_count = 10
-  keypoint_detection_threshold_for_classifier = 0.1
-  classifier = None
 
-  # Initialize the classification model
-#   if classification_model:
-#     classifier = Classifier(classification_model, label_file)
-#     classification_results_to_show = min(classification_results_to_show,
-#                                          len(classifier.pose_class_names))
 
   # Continuously capture images from the camera and run inference
   while cap.isOpened():
@@ -106,34 +92,8 @@ def run(estimation_model: str, tracker_type: str, classification_model: str,
       list_persons = [pose_detector.detect(image)]
 
     # Draw keypoints and edges on input image
-    image = utils.visualize(image, list_persons)
+    image = movenet_utils.visualize(image, list_persons)
 
-    if classifier:
-      # Check if all keypoints are detected before running the classifier.
-      # If there's a keypoint below the threshold, show an error.
-      person = list_persons[0]
-      min_score = min([keypoint.score for keypoint in person.keypoints])
-      if min_score < keypoint_detection_threshold_for_classifier:
-        error_text = 'Some keypoints are not detected.'
-        text_location = (left_margin, 2 * row_size)
-        cv2.putText(image, error_text, text_location, cv2.FONT_HERSHEY_PLAIN,
-                    font_size, text_color, font_thickness)
-        error_text = 'Make sure the person is fully visible in the camera.'
-        text_location = (left_margin, 3 * row_size)
-        cv2.putText(image, error_text, text_location, cv2.FONT_HERSHEY_PLAIN,
-                    font_size, text_color, font_thickness)
-      else:
-        # Run pose classification
-        prob_list = classifier.classify_pose(person)
-
-        # Show classification results on the image
-        for i in range(classification_results_to_show):
-          class_name = prob_list[i].label
-          probability = round(prob_list[i].score, 2)
-          result_text = class_name + ' (' + str(probability) + ')'
-          text_location = (left_margin, (i + 2) * row_size)
-          cv2.putText(image, result_text, text_location, cv2.FONT_HERSHEY_PLAIN,
-                      font_size, text_color, font_thickness)
 
     # Calculate the FPS
     if counter % fps_avg_frame_count == 0:
@@ -170,14 +130,7 @@ def main():
       required=False,
       default='bounding_box')
   parser.add_argument(
-      '--classifier', help='Name of classification model.', required=False)
-  parser.add_argument(
-      '--label_file',
-      help='Label file for classification.',
-      required=False,
-      default='labels.txt')
-  parser.add_argument(
-      '--cameraId', help='Id of camera.', required=False, default=0)
+      '--src', help='Id of camera.', required=False, default=0)
   parser.add_argument(
       '--width',
       help='Width of frame to capture from camera.',
@@ -192,8 +145,7 @@ def main():
       default=480)
   args = parser.parse_args()
 
-  run(args.model, args.tracker, args.classifier, args.label_file,
-      int(args.cameraId), args.width, args.height)
+  run(args.model, args.tracker, args.src, args.width, args.height)
 
 
 if __name__ == '__main__':

@@ -17,7 +17,7 @@ import math
 from typing import List, Tuple
 
 import cv2
-from movenet.data import Person
+from Pose_Estimate.movenet.movenet_data import Person
 import numpy as np
 
 # map edges to a RGB color

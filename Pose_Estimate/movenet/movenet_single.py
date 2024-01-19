@@ -17,9 +17,9 @@ import os
 from typing import Dict, List
 
 import cv2
-from movenet.data import BodyPart
-from movenet.data import Person
-from movenet.data import person_from_keypoints_with_scores
+from Pose_Estimate.movenet.movenet_data import BodyPart
+from Pose_Estimate.movenet.movenet_data import Person
+from Pose_Estimate.movenet.movenet_data import person_from_keypoints_with_scores
 import numpy as np
 
 # pylint: disable=g-import-not-at-top

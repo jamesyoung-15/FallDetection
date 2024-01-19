@@ -18,16 +18,16 @@ import time
 from typing import List
 
 import cv2
-from movenet.data import BodyPart
-from movenet.data import KeyPoint
-from movenet.data import Person
-from movenet.data import Point
-from movenet.data import Rectangle
+from Pose_Estimate.movenet.movenet_data import BodyPart
+from Pose_Estimate.movenet.movenet_data import KeyPoint
+from Pose_Estimate.movenet.movenet_data import Person
+from Pose_Estimate.movenet.movenet_data import Point
+from Pose_Estimate.movenet.movenet_data import Rectangle
 import numpy as np
-from movenet.bounding_box_tracker import BoundingBoxTracker
-from movenet.keypoint_tracker import KeypointTracker
-from movenet.tracker import TrackerConfig
-import movenet.utils as utils
+from Pose_Estimate.movenet.bounding_box_tracker import BoundingBoxTracker
+from Pose_Estimate.movenet.keypoint_tracker import KeypointTracker
+from Pose_Estimate.movenet.movenet_tracker import TrackerConfig
+import Pose_Estimate.movenet.movenet_utils as movenet_utils
 
 # pylint: disable=g-import-not-at-top
 try:
@@ -104,7 +104,7 @@ class MoveNetMultiPose(object):
     # Resize and pad the image to keep the aspect ratio and fit the expected
     # size.
     if is_dynamic_shape_model:
-      resized_image, _ = utils.keep_aspect_ratio_resizer(
+      resized_image, _ = movenet_utils.keep_aspect_ratio_resizer(
           input_image, self._input_size)
       input_tensor = np.expand_dims(resized_image, axis=0)
       self._interpreter.resize_tensor_input(
