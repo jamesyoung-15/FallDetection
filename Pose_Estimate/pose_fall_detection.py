@@ -6,7 +6,7 @@ class PoseFallDetector:
         self.debug = debug
         # self.data_buf = {}
     
-    def fall_detection(self, prev_data):
+    def fall_detection(self, prev_data, frame_width=480, frame_height=480):
         """ 
         Fall detection algorithm using previous 3 frame data.
         
@@ -30,6 +30,11 @@ class PoseFallDetector:
                 spine_angles = []
                 for i in range(num_frames):
                     for j in range(i+1, num_frames):
+                        # calculate shoulder and hip pixel y value differences (normalized to frame height)
+                        print(f'Shoulder diff: {value["shoulders"][i][1] - value["shoulders"][j][1]}')
+                        print(f'Shoulder diff norm: {value["shoulders"][i][1]/frame_height - value["shoulders"][j][1]/frame_height}')
+                        print(f'Shoulder diff: {value["hips"][i][1] - value["hips"][j][1]}')
+                        print(f'Shoulder diff norm: {value["hips"][i][1]/frame_height - value["hips"][j][1]/frame_height}')
                         shoulder_diffs.append(value["shoulders"][i][1] - value["shoulders"][j][1])
                         hip_diffs.append(abs(value["hips"][i][1] - value["hips"][j][1]))
                         spine_angles.append(pose_utils.angle_between(value['spine_vector'][i], value['spine_vector'][j]))

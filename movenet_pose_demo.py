@@ -71,7 +71,8 @@ def run(estimation_model: str, tracker_type: str, media_src: str, width: int, he
   font_size = 1
   font_thickness = 1
   fps_avg_frame_count = 10
-
+  interval = 7
+  num_frame = 0
 
   # Continuously capture images from the camera and run inference
   while cap.isOpened():
@@ -80,20 +81,22 @@ def run(estimation_model: str, tracker_type: str, media_src: str, width: int, he
       sys.exit(
           'ERROR: Unable to read from webcam. Please verify your webcam settings.'
       )
-
+    num_frame += 1
     counter += 1
     image = cv2.flip(image, 1)
 
-    if 'movenet_multipose' in estimation_model:
-      # Run pose estimation using a MultiPose model.
-      list_persons = pose_detector.detect(image)
-    else:
-      # Run pose estimation using a SinglePose model, and wrap the result in an
-      # array.
-      list_persons = [pose_detector.detect(image)]
+    if num_frame >= interval:
+      num_frame = 0
+      if 'movenet_multipose' in estimation_model:
+        # Run pose estimation using a MultiPose model.
+        list_persons = pose_detector.detect(image)
+      else:
+        # Run pose estimation using a SinglePose model, and wrap the result in an
+        # array.
+        list_persons = [pose_detector.detect(image)]
 
-    # Draw keypoints and edges on input image
-    image = movenet_utils.visualize(image, list_persons)
+      # Draw keypoints and edges on input image
+      image = movenet_utils.visualize(image, list_persons)
 
 
     # Calculate the FPS
@@ -137,7 +140,7 @@ def main():
       help='Width of frame to capture from camera.',
       required=False,
       type=int,
-      default=640)
+      default=480)
   parser.add_argument(
       '--height',
       help='Height of frame to capture from camera.',

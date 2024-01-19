@@ -1,14 +1,14 @@
 import cv2
 from ultralytics import YOLO
 from Pose_Estimate.pose_fall_detection import PoseFallDetector
-from Pose_Estimate.yolo_pose import YoloPoseDetector
+from Pose_Estimate.yolo_pose.yolo_pose import YoloPoseDetector
 from utils import pose_utils
 import time
 
 def video_inference(vid_source, model, vid_width, vid_height, 
                     show_frame=True, manual_move=False, interval=0, 
                     debug=False, save_video=False, conf_threshold=0.5, 
-                    delay=1,resize=False):
+                    delay=1,resize=False, benchmark=False, fps=24):
     """ 
     Performs pose estimation and fall detection on video (can be usb camera or video file).
     
@@ -21,7 +21,9 @@ def video_inference(vid_source, model, vid_width, vid_height,
     cap = cv2.VideoCapture(vid_source)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, vid_width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, vid_height)
-
+    cap.set(cv2.CAP_PROP_FPS, fps)
+    
+    
     # save video
     if save_video == True:
         fourcc = cv2.VideoWriter_fourcc('M','J','P','G')
@@ -34,6 +36,8 @@ def video_inference(vid_source, model, vid_width, vid_height,
     fall_detected = False
     fall_conf = 0
     prev_time = 0
+    start_time = time.time()
+    total_frames = 0
     
     while True:
         # read frame
@@ -43,14 +47,15 @@ def video_inference(vid_source, model, vid_width, vid_height,
         if resize:
             frame = cv2.resize(frame, (vid_width,vid_height), interpolation=cv2.INTER_AREA)
         
-        # track time for interval and fps
+        # track time for checking time to delete old data
         curr_time = time.time()
         num_frames_elapsed += 1
-        
+        total_frames += 1
+        # run inference every interval frames
         if num_frames_elapsed >= interval:
             num_frames_elapsed = 0
             model.yolo_predict(prev_data, frame, curr_time)
-            fall_detected, fall_conf = fall_detector.fall_detection(prev_data)
+            fall_detected, fall_conf = fall_detector.fall_detection(prev_data, frame_width=vid_width, frame_height=vid_height)
             
             
         
@@ -68,6 +73,7 @@ def video_inference(vid_source, model, vid_width, vid_height,
             except:
                 pass
         
+        # save to video
         if save_video == True:
             video_output.write(frame)
         
@@ -88,7 +94,14 @@ def video_inference(vid_source, model, vid_width, vid_height,
         # press esc to quit
         if key == 27:  # ESC
             break
-        
+    
+    # benchmark
+    if benchmark:
+        end_time = time.time()
+        total_time = end_time - start_time
+        total_fps = total_frames/total_time
+        print(f'Total Frames: {total_frames}, Total Time: {total_time}, Total FPS: {total_fps}')
+    
     # cleanup
     cap.release()
     if save_video == True:
@@ -131,6 +144,8 @@ def main():
     pose_model = args.pose_type
     resize = bool(args.resize_frame)
     delay = args.delay
+    fps = args.fps
+    
     # load model
     model = None
     if pose_model==1:
@@ -150,7 +165,8 @@ def main():
     else:
         video_inference(vid_source=media_source, model=model, vid_width=vid_width, vid_height=vid_height, 
                         show_frame=show_frame, manual_move=manual_move, interval=interval, 
-                        debug=debug, save_video=save_video, conf_threshold=conf_threshold, resize=resize, delay=delay)
+                        debug=debug, save_video=save_video, conf_threshold=conf_threshold, 
+                        resize=resize, delay=delay, fps=fps)
 
 
 
