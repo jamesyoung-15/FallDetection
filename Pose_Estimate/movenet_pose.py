@@ -179,14 +179,16 @@ def main():
   parser.add_argument(
       '--cameraId', help='Id of camera.', required=False, default=0)
   parser.add_argument(
-      '--frameWidth',
+      '--width',
       help='Width of frame to capture from camera.',
       required=False,
+      type=int,
       default=640)
   parser.add_argument(
-      '--frameHeight',
+      '--height',
       help='Height of frame to capture from camera.',
       required=False,
+      type=int,
       default=480)
   args = parser.parse_args()
 
