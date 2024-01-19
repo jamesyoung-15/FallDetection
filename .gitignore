@@ -1,6 +1,6 @@
 venv/
 *pycache*
-models/
+# models/
 .venv/
 le2i/
 yolov8s*
