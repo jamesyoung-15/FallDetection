@@ -25,10 +25,13 @@ def video_inference(vid_source, model, vid_width, vid_height,
     cap = cv2.VideoCapture(vid_source)
     # if video is webcam, set width and height, otherwise resizing with cap.set doesn't work
     if is_webcam:
+        print("Detected using webcam...")
+        print(f'Width: {vid_width}, Height: {vid_height}, FPS: {fps}')
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, vid_width)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, vid_height)
         cap.set(cv2.CAP_PROP_FPS, fps)
     elif not is_webcam and not resize:
+        print("Detected non-webcam video...")
         vid_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         vid_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     # get width and height
