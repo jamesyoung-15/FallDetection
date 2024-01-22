@@ -3,6 +3,8 @@ from ultralytics import YOLO
 from utils import pose_utils
 from utils import my_defs
 import numpy as np
+import math
+import cv2
 
 class YoloPoseDetector:
     def __init__(self, conf_threshold=0.5, debug=False, model_path="models/yolo-weights/yolov8n-pose.pt"):
@@ -17,6 +19,8 @@ class YoloPoseDetector:
             self.model = YOLO(self.model_path)    
         else:
             raise Exception("Yolo pose model path not specified.")
+        
+    
         
     def yolo_predict(self, prev_data, frame, curr_time):
         """ 
@@ -38,6 +42,7 @@ class YoloPoseDetector:
             num_pts = keypts.shape[1]
             track_id = [1, 1, 1] # random pad for testing
             boxes = None
+            # frame = result.plot()
             if result.boxes.id is not None:
                 track_id = result.boxes.id.tolist()
                 boxes = result.boxes.xywh.tolist() # bounding boxes  
@@ -61,6 +66,7 @@ class YoloPoseDetector:
                                     prev_data[id]['spine_vector'].pop(0)
                                     prev_data[id]['hips'].pop(0)
                                     prev_data[id]['shoulders'].pop(0)
+                                    prev_data[id]['state'].pop(0)
                                 prev_data[id]['spine_vector'].append(spine_vector)
                                 prev_data[id]['hips'].append(hips)
                                 prev_data[id]['shoulders'].append(shoulders)
@@ -75,6 +81,7 @@ class YoloPoseDetector:
                         print(f"ID {key} hasn't checked over {time_till_delete} seconds")
                         print(f'Deleting ID {key}')
                     del prev_data[key]
+        # return frame
 
     def get_xy(self,keypoint):
         """ Convert Yolo tensor keypoint data to array and returns (x,y)  """
@@ -202,9 +209,10 @@ class YoloPoseDetector:
             if self.debug:
                 print(f'State: {state}')
             # cv2.putText(frame, state, (hips[0]+30, hips[1]+20),  cv2.FONT_HERSHEY_PLAIN,2,(155,200,0),2)
-        
+            
         # return these for storing fall detection data
         return spine_vector, legs_vector, hips, shoulder, state
+    
     
     
     

@@ -17,12 +17,22 @@ def video_inference(vid_source, model, vid_width, vid_height,
     
     fall_detector = PoseFallDetector(debug=debug)
     
-    # non threaded usb camera stream
-    cap = cv2.VideoCapture(vid_source)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, vid_width)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, vid_height)
-    cap.set(cv2.CAP_PROP_FPS, fps)
+    is_webcam = False
+    if '/dev/video' in vid_source:
+        is_webcam = True
     
+    # non threaded video stream
+    cap = cv2.VideoCapture(vid_source)
+    # if video is webcam, set width and height, otherwise resizing with cap.set doesn't work
+    if is_webcam:
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, vid_width)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, vid_height)
+        cap.set(cv2.CAP_PROP_FPS, fps)
+    elif not is_webcam and not resize:
+        vid_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        vid_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    # get width and height
+    print(f'Video Width: {cap.get(cv2.CAP_PROP_FRAME_WIDTH)} , Video Height: {cap.get(cv2.CAP_PROP_FRAME_HEIGHT)}')
     
     # save video
     if save_video == True:
@@ -56,7 +66,8 @@ def video_inference(vid_source, model, vid_width, vid_height,
         if num_frames_elapsed >= interval:
             num_frames_elapsed = 0
             model.yolo_predict(prev_data, frame, curr_time)
-            fall_detected, fall_conf = fall_detector.fall_detection(prev_data, frame_width=vid_width, frame_height=vid_height)
+            # fall_detected, fall_conf = fall_detector.fall_detection(prev_data, frame_width=vid_width, frame_height=vid_height)
+            fall_detected, fall_conf = fall_detector.fall_detection_v2(prev_data, frame_width=vid_width, frame_height=vid_height)
             
             
         
