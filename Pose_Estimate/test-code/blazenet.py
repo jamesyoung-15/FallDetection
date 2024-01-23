@@ -23,17 +23,21 @@ if __name__ == "__main__":
     cap = cv2.VideoCapture(vid_source)
     prevtime = 0
     mp_pose = mp.solutions.pose
-
+    currFrame = 1
     while True:
         # read video frame
         ret, frame = cap.read()
+        if ret == False:
+            break
+        currFrame += 1
         
         # test image intead of video
         # frame = cv2.imread(img_test)
-        # frame = cv2.resize(frame, (320, 320))
-        
-        # annotate pose landmarks to iamge, return landmark results
-        frame, results = pose_obj.find_pose(frame)
+        frame = cv2.resize(frame, (384, 384))
+        if currFrame == 5:
+            currFrame = 1
+            # annotate pose landmarks to iamge, return landmark results
+            frame, results = pose_obj.find_pose(frame)
         
             
         

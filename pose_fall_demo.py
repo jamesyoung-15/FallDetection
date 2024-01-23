@@ -68,7 +68,7 @@ def video_inference(vid_source, model, vid_width, vid_height,
         # run inference every interval frames
         if num_frames_elapsed >= interval:
             num_frames_elapsed = 0
-            model.yolo_predict(prev_data, frame, curr_time)
+            model.yolo_track(prev_data, frame, curr_time)
             # fall_detected, fall_conf = fall_detector.fall_detection(prev_data, frame_width=vid_width, frame_height=vid_height)
             fall_detected, fall_conf = fall_detector.fall_detection_v2(prev_data, frame_width=vid_width, frame_height=vid_height)
             

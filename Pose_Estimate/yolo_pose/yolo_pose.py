@@ -22,9 +22,9 @@ class YoloPoseDetector:
         
     
         
-    def yolo_predict(self, prev_data, frame, curr_time):
+    def yolo_track(self, prev_data, frame, curr_time):
         """ 
-        Run inference on frame using YOLO pose model, extract keypoints, determine state, and stores data to dict. Modifies prev_data input.
+        Run inference with tracking on frame using YOLO pose model, extract keypoints, determine state, and stores data to dict. Modifies prev_data input.
         
         Args:
         - prev_data: reference to dictionary, modifies dictionary appending data
@@ -73,6 +73,62 @@ class YoloPoseDetector:
                                 prev_data[id]['state'].append(state)
                             # append inference time
                             prev_data[id]['last_check'] = curr_time
+            # delete data if not checked for a while
+            for key, value in prev_data.copy().items():
+                time_till_delete = 2
+                if curr_time -  value['last_check'] > time_till_delete:
+                    if self.debug:
+                        print(f"ID {key} hasn't checked over {time_till_delete} seconds")
+                        print(f'Deleting ID {key}')
+                    del prev_data[key]
+        # return frame
+    
+    def yolo_predict(self, prev_data, frame, curr_time):
+        """ 
+        Run inference (no tracking) on frame using YOLO pose model, extract keypoints, determine state, and stores data to dict. Modifies prev_data input.
+        
+        Args:
+        - prev_data: reference to dictionary, modifies dictionary appending data
+        - frame: cv2 frame (numpy array), frame from video
+        - curr_time: float, current time in seconds 
+        
+        """
+        spine_vector, leg_vector, hips, shoulders, state = None, None, None, None, None
+        results = self.model.predict(frame, conf=0.5, verbose=False)
+        # get data from inference
+        for result in results:
+            keypts = result.keypoints
+            # print(f'Keypoints: \n{kpts}')
+            num_people = keypts.shape[0]
+            num_pts = keypts.shape[1]
+            track_id = 1
+            # frame = result.plot()
+                # if keypts detected
+            if num_pts !=0:
+                id = int(track_id)
+                spine_vector, leg_vector, hips, shoulders, state = self.extract_keypts(0, keypts, frame)
+                # append spine vector to prev_data
+                if spine_vector:
+                    # create new entry if no existing data for person id in prev_data
+                    if prev_data.get(id) == None:
+                        prev_data[id] = {}
+                        prev_data[id]['spine_vector'] = [spine_vector]
+                        prev_data[id]['hips'] = [hips]
+                        prev_data[id]['shoulders'] = [shoulders]
+                        prev_data[id]['state'] = [state]
+                    # otherwise append data, remove oldest data if more than 3 data points (3 frames)
+                    else:
+                        if len(prev_data[id]['spine_vector'])>=3:
+                            prev_data[id]['spine_vector'].pop(0)
+                            prev_data[id]['hips'].pop(0)
+                            prev_data[id]['shoulders'].pop(0)
+                            prev_data[id]['state'].pop(0)
+                        prev_data[id]['spine_vector'].append(spine_vector)
+                        prev_data[id]['hips'].append(hips)
+                        prev_data[id]['shoulders'].append(shoulders)
+                        prev_data[id]['state'].append(state)
+                    # append inference time
+                    prev_data[id]['last_check'] = curr_time
             # delete data if not checked for a while
             for key, value in prev_data.copy().items():
                 time_till_delete = 2
