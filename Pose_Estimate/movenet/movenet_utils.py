@@ -80,7 +80,7 @@ def visualize(
   """
   for person in list_persons:
     if not person:
-        print("ok")
+        print("No person detected.")
         break
     if person.score < instance_threshold:
       continue

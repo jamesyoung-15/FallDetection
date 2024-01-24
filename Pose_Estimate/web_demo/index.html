@@ -5,7 +5,20 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <video id="videoElement" autoplay></video>
-    <script src="script.js"></script>
+    <header>
+        <h1>USB Camera Pose Detection Example</h1>
+    </header>
+    <main>
+        <section class="container">
+            <div class="videoContainer" id="videoContainer">
+                <video id="videoElement" autoplay></video>
+            </div>
+        </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+    <script src="script.js" type="module"></script>
 </body>
 </html>

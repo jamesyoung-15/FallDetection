@@ -71,7 +71,7 @@ def run(estimation_model: str, tracker_type: str, media_src: str, width: int, he
   font_size = 1
   font_thickness = 1
   fps_avg_frame_count = 10
-  interval = 7
+  interval = 5
   num_frame = 0
 
   # Continuously capture images from the camera and run inference
@@ -83,7 +83,7 @@ def run(estimation_model: str, tracker_type: str, media_src: str, width: int, he
       )
     num_frame += 1
     counter += 1
-    image = cv2.flip(image, 1)
+    # image = cv2.flip(image, 1)
 
     if num_frame >= interval:
       num_frame = 0
@@ -95,6 +95,7 @@ def run(estimation_model: str, tracker_type: str, media_src: str, width: int, he
         # array.
         list_persons = [pose_detector.detect(image)]
 
+      print(list_persons[0])
       # Draw keypoints and edges on input image
       image = movenet_utils.visualize(image, list_persons)
 
@@ -112,7 +113,7 @@ def run(estimation_model: str, tracker_type: str, media_src: str, width: int, he
                 font_size, text_color, font_thickness)
 
     # Stop the program if the ESC key is pressed.
-    if cv2.waitKey(1) == 27:
+    if cv2.waitKey(50) == 27:
       break
     cv2.imshow(estimation_model, image)
 

@@ -11,7 +11,7 @@ def get_args():
     # user settings
     parser.add_argument("--src", type=str, default='./test-data/videos/fall-1.mp4', help="Video file location (eg. /dev/video0)")
     parser.add_argument("--show", type=int, default=1, help="Whether to show camera to screen, 0 to hide 1 to show.")
-    parser.add_argument("--width", type=int, default=480, help="Input video width. (eg. 480)")
+    parser.add_argument("--width", type=int, default=640, help="Input video width. (eg. 640)")
     parser.add_argument("--height", type=int, default=480, help="Input video height (eg. 480)")
     parser.add_argument("--conf_score", type=float, default=0.5, help="Confidence score threshold (eg. 0.7)")
     parser.add_argument("--interval", type=int, default=7, help="Interval in frames to run inference (eg. 2 means inference every 2 frames)")

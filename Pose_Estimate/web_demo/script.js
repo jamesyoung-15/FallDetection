@@ -35,7 +35,15 @@ function promptCameraSelection(devices) {
         startCamera(selectedDeviceId);
     });
 
-    document.body.appendChild(selectElement);
+    const beginButton = document.createElement('button');
+    beginButton.textContent = 'Begin Pose Detection';
+
+    beginButton.addEventListener('click', event => {
+        detectPose();
+    });
+
+    document.getElementById("videoContainer").appendChild(selectElement);
+    document.getElementById("videoContainer").appendChild(beginButton);
 }
 
 // Get the list of available devices
@@ -44,3 +52,12 @@ navigator.mediaDevices.enumerateDevices()
         promptCameraSelection(devices);
     })
     .catch(handleError);
+
+
+
+let detectPose = async () =>{
+    // Create a detector.
+    const detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
+    const poses = await detector.estimatePoses(videoElement);
+    console.log(poses)
+}

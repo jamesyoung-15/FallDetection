@@ -2,13 +2,13 @@
 My internship project/mini-prototype at [Intelligent Design Technology Limited](https://intelligentdesign.hk/english/) that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera image input. The project is aimed for a elderly home robot that uses Raspberry PI.
 
 <p align="middle">
-    <img src="./media/demo-1.gif" width="30%" height="200px"/>
-    <img src="./media/demo-2.gif" width="30%" height="200px"/>
-    <img src="./media/demo-3.gif" width="30%" height="200px"/>
+    <img src="./docs/media/demo-1.gif" width="30%" height="200px"/>
+    <img src="./docs/media/demo-2.gif" width="30%" height="200px"/>
+    <img src="./docs/media/demo-3.gif" width="30%" height="200px"/>
 </p>
 
 
-Note: This project was done within a month so improvements are needed for more robustness. 
+Note: This project was done within a month by single intern (me) so improvements are needed for more robustness. 
 
 ## Usage
 ### Install Dependencies
@@ -39,7 +39,7 @@ python run.py --src test/data/videos/fall-1.mp4 --interval 7
 
 -  Yolo Pose Estimate on USB-Camera
 ```bash
-python run.py --src /dev/video0 --interval 7 --width 480 --height 480
+python run.py --src /dev/video0 --interval 7 --width 640 --height 480
 ```
 
 - Yolo Pose Estimate on Image

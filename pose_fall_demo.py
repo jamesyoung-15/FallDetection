@@ -60,7 +60,6 @@ def video_inference(vid_source, model, vid_width, vid_height,
             break
         if resize:
             frame = cv2.resize(frame, (vid_width,vid_height), interpolation=cv2.INTER_AREA)
-        
         # track time for checking time to delete old data
         curr_time = time.time()
         num_frames_elapsed += 1
