@@ -33,7 +33,7 @@ def main():
         print("Using Movenet Multipose Lightning")
         movenet_run(estimation_model='models/tflite/movenet_multipose.tflite', tracker_type="bounding_box",
                     media_src=media_source, vid_width=vid_width, vid_height=vid_height, delay=delay, fps=fps, 
-                    save_video=save_video, benchmark=benchmark)
+                    save_video=save_video, benchmark=benchmark, resize=resize)
     else:
         print("Using YoloV8 Pose")
         yolo_run(media_source, vid_width=vid_width, vid_height=vid_height, interval=interval, 

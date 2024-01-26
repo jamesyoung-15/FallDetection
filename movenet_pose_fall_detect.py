@@ -27,15 +27,24 @@ from Pose_Estimate.pose_fall_detection import PoseFallDetector
 def run(estimation_model: str, tracker_type: str, 
         media_src: str, vid_width: int, vid_height: int, delay: int = 1,
         to_show: bool = True, interval: int = 5, debug: bool = False,
-        fps: int = 24, save_video: bool = False, benchmark: bool = True) -> None:
+        fps: int = 24, save_video: bool = False, benchmark: bool = True,
+        resize: bool = False) -> None:
 	"""Continuously run inference on images acquired from the camera.
 
 	Args:
 	estimation_model: Name of the TFLite pose estimation model.
 	tracker_type: Type of Tracker('keypoint' or 'bounding_box').
 	media_src: The camera id to be passed to OpenCV.
-	width: The width of the frame captured from the camera.
-	height: The height of the frame captured from the camera.
+	vid_width: The width of the frame captured from the camera.
+	vid_height: The height of the frame captured from the camera.
+	delay: The time interval between each frame capture (set to higher than 1 if cv2.imshow is too fast).
+	to_show: Whether to show the output frames.
+	interval: The interval (in frames) between each pose estimation.
+	debug: Whether to print debug information.
+	fps: The number of frames per second to be captured from the camera.
+	save_video: Whether to save the output video (saves to demo.avi).
+	bechmark: Calculate total fps.
+	resize: Whether to resize the frame to vid_width and vid_height.
 	"""
 
   	# Notify users that tracker is only enabled for MoveNet MultiPose model.
@@ -109,7 +118,9 @@ def run(estimation_model: str, tracker_type: str,
 		success, image = cap.read()
 		if not success:
 			break
-
+		if resize:
+			image = cv2.resize(image, (vid_width,vid_height), interpolation=cv2.INTER_AREA)
+			
 		total_frames += 1
 		num_frame += 1
 		counter += 1
@@ -150,10 +161,10 @@ def run(estimation_model: str, tracker_type: str,
 
 
 		# Calculate the FPS
-		# if counter % fps_avg_frame_count == 0:
-		# 	end_time_fps = time.time()
-		# 	fps_track = fps_avg_frame_count / (end_time_fps - start_time_fps)
-		# 	start_time_fps = time.time()
+		if counter % fps_avg_frame_count == 0:
+			end_time_fps = time.time()
+			fps_track = fps_avg_frame_count / (end_time_fps - start_time_fps)
+			start_time_fps = time.time()
 
 		# Show the FPS
 		fps_text = 'FPS = ' + str(int(fps_track))
