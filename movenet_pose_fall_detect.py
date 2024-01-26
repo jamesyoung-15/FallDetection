@@ -84,7 +84,8 @@ def run(estimation_model: str, tracker_type: str,
 	# if video is webcam, set width and height, otherwise resizing with cap.set doesn't work
 	if is_webcam:
 		print("Detected using webcam...")
-		print(f'Width: {vid_width}, Height: {vid_height}, FPS: {fps}')
+		print("Trying to set settings to: ")
+		print(f'Width: {vid_width}, Height: {vid_height}, FPS: {fps}\n')
 		cap.set(cv2.CAP_PROP_FRAME_WIDTH, vid_width)
 		cap.set(cv2.CAP_PROP_FRAME_HEIGHT, vid_height)
 		cap.set(cv2.CAP_PROP_FPS, fps)
@@ -94,7 +95,8 @@ def run(estimation_model: str, tracker_type: str,
 			vid_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 			vid_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 	# get width and height
-	print(f'Video Width: {cap.get(cv2.CAP_PROP_FRAME_WIDTH)} , Video Height: {cap.get(cv2.CAP_PROP_FRAME_HEIGHT)}')
+	print("Actual CV2 Settings:")
+	print(f'Video Width: {cap.get(cv2.CAP_PROP_FRAME_WIDTH)} , Video Height: {cap.get(cv2.CAP_PROP_FRAME_HEIGHT)}, FPS: {cap.get(cv2.CAP_PROP_FPS)}\n')
  
 	if save_video == True:
 		fourcc = cv2.VideoWriter_fourcc('M','J','P','G')
