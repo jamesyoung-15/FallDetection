@@ -94,8 +94,8 @@ def run(estimation_model: str, tracker_type: str, media_src: str, width: int, he
         # Run pose estimation using a SinglePose model, and wrap the result in an
         # array.
         list_persons = [pose_detector.detect(image)]
-
-      print(list_persons[0])
+      if list_persons:
+        print(list_persons[0])
       # Draw keypoints and edges on input image
       image = movenet_utils.visualize(image, list_persons)
 
@@ -113,7 +113,7 @@ def run(estimation_model: str, tracker_type: str, media_src: str, width: int, he
                 font_size, text_color, font_thickness)
 
     # Stop the program if the ESC key is pressed.
-    if cv2.waitKey(50) == 27:
+    if cv2.waitKey(1) == 27:
       break
     cv2.imshow(estimation_model, image)
 
@@ -128,7 +128,7 @@ def main():
       '--model',
       help='Name of estimation model.',
       required=False,
-      default='movenet_multipose')
+      default='models/tflite/movenet_multipose.tflite')
   parser.add_argument(
       '--tracker',
       help='Type of tracker to track poses across frames.',

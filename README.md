@@ -1,5 +1,5 @@
-# Simple Action Detection
-My internship project/mini-prototype at [Intelligent Design Technology Limited](https://intelligentdesign.hk/english/) that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera image input. The project is aimed for a elderly home robot that uses Raspberry PI.
+# Simple Fall Detection
+My internship project/mini-prototype at [Intelligent Design Technology Limited](https://intelligentdesign.hk/english/) that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera image input. The demo is done using pose estimation and heuristics (see below). This project is designed for an elderly home monitoring system that uses Raspberry PI.
 
 <p align="middle">
     <img src="./docs/media/demo-1.gif" width="30%" height="200px"/>
@@ -8,7 +8,6 @@ My internship project/mini-prototype at [Intelligent Design Technology Limited](
 </p>
 
 
-Note: This project was done within a month by single intern (me) so improvements are needed for more robustness. 
 
 ## Usage
 ### Install Dependencies
@@ -67,18 +66,15 @@ For full documentation see [here.](./docs/Documentation.md)
 ### Possible Approaches to Fall Detection/Action Detection
 1. Use pose estimation w/ heuristics
 
-2. Use action recognition model (video classification). Could use existing pre-trained model or train own model w/ transfer learning.
+2. Video classification
 
-3. Train an image classifier w/ dataset.
+3.  Image Classification
 
 4. Combine some of the above methods (eg. pose estimate + classification).
 
-### Pose Fall Detection Approach
-Todo
 
 ## Resources
 - [Yolo Pose](https://docs.ultralytics.com/tasks/pose/)
 - [Movenet Example](https://github.com/Kazuhito00/MoveNet-Python-Example/tree/main)
-- [Potential way to increase USB camera FPS](https://pyimagesearch.com/2015/12/21/increasing-webcam-fps-with-python-and-opencv/)
 - [Example of using Pose to determine posture](https://bozliu.medium.com/dynamic-siting-posture-recognition-and-correction-68ae418fbc77)
 - [Example of using OpenPose to determine fall w/ head](https://github.com/augmentedstartups/Pose-Estimation/tree/master/3.%20Fall%20Detection)
