@@ -25,7 +25,7 @@ import Pose_Estimate.movenet.movenet_utils as movenet_utils
 from Pose_Estimate.pose_fall_detection import PoseFallDetector
 
 def run(estimation_model: str, tracker_type: str, 
-        media_src: str, width: int, height: int, delay: int = 1,
+        media_src: str, vid_width: int, vid_height: int, delay: int = 1,
         to_show: bool = True, interval: int = 5, debug: bool = False,
         fps: int = 24, save_video: bool = False, benchmark: bool = True) -> None:
 	"""Continuously run inference on images acquired from the camera.
@@ -87,8 +87,8 @@ def run(estimation_model: str, tracker_type: str,
 	print(f'Video Width: {cap.get(cv2.CAP_PROP_FRAME_WIDTH)} , Video Height: {cap.get(cv2.CAP_PROP_FRAME_HEIGHT)}')
  
 	if save_video == True:
-			fourcc = cv2.VideoWriter_fourcc('M','J','P','G')
-			video_output = cv2.VideoWriter('demo.avi',  fourcc, 30, (int(cap.get(3)),int(cap.get(4)))) 
+		fourcc = cv2.VideoWriter_fourcc('M','J','P','G')
+		video_output = cv2.VideoWriter('demo.avi',  fourcc, 30, (int(cap.get(3)),int(cap.get(4)))) 
 
 	# Visualization parameters
 	row_size = 20  # pixels
@@ -128,7 +128,7 @@ def run(estimation_model: str, tracker_type: str,
 			if len(list_persons)!=0:
 				curr_time = time.time()
 				pose_detector.update_data(list_persons, prev_data, image, curr_time)
-				fall_detected, fall_conf = fall_detector.fall_detection_v2(prev_data, frame_width=width, frame_height=height)
+				fall_detected, fall_conf = fall_detector.fall_detection_v2(prev_data, frame_width=vid_width, frame_height=vid_height)
 
 
 		# write to frame if fall detected
@@ -150,10 +150,10 @@ def run(estimation_model: str, tracker_type: str,
 
 
 		# Calculate the FPS
-		if counter % fps_avg_frame_count == 0:
-			end_time_fps = time.time()
-			fps_track = fps_avg_frame_count / (end_time_fps - start_time_fps)
-			start_time_fps = time.time()
+		# if counter % fps_avg_frame_count == 0:
+		# 	end_time_fps = time.time()
+		# 	fps_track = fps_avg_frame_count / (end_time_fps - start_time_fps)
+		# 	start_time_fps = time.time()
 
 		# Show the FPS
 		fps_text = 'FPS = ' + str(int(fps_track))
