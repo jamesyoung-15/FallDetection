@@ -90,8 +90,9 @@ def run(estimation_model: str, tracker_type: str,
 		cap.set(cv2.CAP_PROP_FPS, fps)
 	elif not is_webcam:
 		print("Detected non-webcam video...")
-		vid_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-		vid_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+		if not resize:
+			vid_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+			vid_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 	# get width and height
 	print(f'Video Width: {cap.get(cv2.CAP_PROP_FRAME_WIDTH)} , Video Height: {cap.get(cv2.CAP_PROP_FRAME_HEIGHT)}')
  
