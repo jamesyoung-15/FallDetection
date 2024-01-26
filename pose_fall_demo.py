@@ -28,10 +28,14 @@ def main():
     benchmark = bool(args.benchmark)
     
     # load model
-    model = None
     if pose_model==1:
         print("Using Movenet Multipose Lightning")
         movenet_run(estimation_model='models/tflite/movenet_multipose.tflite', tracker_type="bounding_box",
+                    media_src=media_source, vid_width=vid_width, vid_height=vid_height, delay=delay, fps=fps, 
+                    save_video=save_video, benchmark=benchmark, resize=resize, debug=debug, interval=interval)
+    elif pose_model==2:
+        print("Using Movenet Singlepose Lightning")
+        movenet_run(estimation_model='models/tflite/movenet_singlepose.tflite', tracker_type="bounding_box",
                     media_src=media_source, vid_width=vid_width, vid_height=vid_height, delay=delay, fps=fps, 
                     save_video=save_video, benchmark=benchmark, resize=resize, debug=debug, interval=interval)
     else:
