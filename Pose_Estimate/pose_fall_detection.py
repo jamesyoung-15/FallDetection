@@ -61,6 +61,9 @@ class PoseFallDetector:
                     prev_data[key]['spine_vector'] = prev_data[key]['spine_vector'][3:]
                     prev_data[key]['hips'] = prev_data[key]['hips'][3:]
                     prev_data[key]['shoulders'] = prev_data[key]['shoulders'][3:]
+                    # exit loop if at least one person has high probability of fall
+                    break
+                    
                 elif fall_conf<.7 and fall_conf>.5:
                     fall_detected = True
                     print(f'\nMedium/Low Probability of Person {key} Fall Detected.')
@@ -102,3 +105,4 @@ class PoseFallDetector:
         else:
             shoulder_conf = 2
         return min(1,(angle_conf + hip_conf + shoulder_conf+ state_conf)/10)
+    

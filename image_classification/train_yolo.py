@@ -1,6 +1,6 @@
 from ultralytics import YOLO
 
-model_path = "../yolo-weights/yolov8n.pt"
+model_path = "../models/yolo-weights/yolov8n.pt"
 model = YOLO(model_path)
 
 

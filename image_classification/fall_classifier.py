@@ -1,7 +1,12 @@
 from ultralytics import YOLO
-from utils import pose_utils
+import argparse
 
-args = pose_utils.get_args()
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--src", type=str, default='0', help="Video file location (eg. /dev/video0)")
+
+args = parser.parse_args()
 
 media_src = args.src
 
