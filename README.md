@@ -1,11 +1,14 @@
 # Simple Fall Detection
-My internship project/mini-prototype at [Intelligent Design Technology Limited](https://intelligentdesign.hk/english/) that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera image input. The demo is done using pose estimation and heuristics (see below). This project is designed for an elderly home monitoring system that uses Raspberry PI.
+My internship project/mini-prototype at [Intelligent Design Technology Limited](https://intelligentdesign.hk/english/) that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera image input.
 
 <p align="middle">
     <img src="./docs/media/demo-1.gif" width="30%" height="200px"/>
     <img src="./docs/media/demo-2.gif" width="30%" height="200px"/>
     <img src="./docs/media/demo-3.gif" width="30%" height="200px"/>
 </p>
+
+## About
+This project is done using pose estimation and basic heuristics. This project is designed for an elderly home monitoring system that uses Raspberry PI. Tested with both Yolo V8 pose and Movenet pose models.
 
 
 

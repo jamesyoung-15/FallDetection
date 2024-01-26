@@ -14,11 +14,11 @@
 """Main script to run pose classification and pose estimation."""
 import argparse
 import logging
-import sys
 import time
+import sys
 
 import cv2
-# from Pose_Estimate.movenet.movenet_single import Movenet
+from Pose_Estimate.movenet.movenet_single import Movenet
 from Pose_Estimate.movenet.movenet_multi import MoveNetMultiPose
 # from ml import Posenet
 import Pose_Estimate.movenet.movenet_utils as movenet_utils
@@ -53,23 +53,19 @@ def run(estimation_model: str, tracker_type: str,
 			'No tracker will be used as tracker can only be enabled for '
 			'MoveNet MultiPose model.')
 
-  # Initialize the pose estimator selected.
-  # estimation_model = 'models/tflite/' + estimation_model + '.tflite'
-  # if 'movenet_singlepose' in estimation_model:
-  #   print("Using Movenet Singlepose (Lightning)")
-  #   pose_detector = Movenet(estimation_model)
-  # elif estimation_model == 'posenet':
-  #   # pose_detector = Posenet(estimation_model)
-  #   pass
-  # elif 'movenet_multipose' in estimation_model:
-  #   print("Using MoveNet MultiPose")
-  #   pose_detector = MoveNetMultiPose(estimation_model, tracker_type)
-  # else:
-  #   sys.exit('ERROR: Model is not supported.')
+    # Initialize the pose estimator selected.
+    # estimation_model = 'models/tflite/' + estimation_model + '.tflite'
+	if 'movenet_singlepose' in estimation_model:
+		print("Using Movenet Singlepose (Lightning)")
+		pose_detector = Movenet(estimation_model)
+	elif 'movenet_multipose' in estimation_model:
+		print("Using MoveNet MultiPose")
+		pose_detector = MoveNetMultiPose(estimation_model, tracker_type)
+	else:
+		sys.exit('ERROR: Model is not supported.')
 	
-	# init
-	pose_detector = MoveNetMultiPose(estimation_model, tracker_type)
-	fall_detector = PoseFallDetector(debug=False)
+	# Initialize the fall detector
+	fall_detector = PoseFallDetector(debug=debug)
 
 	# Variables to calculate FPS
 	counter, fps_track = 0, 0
@@ -94,10 +90,11 @@ def run(estimation_model: str, tracker_type: str,
 		if not resize:
 			vid_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 			vid_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+			print(vid_height)
 	# get width and height
 	print("Actual CV2 Settings:")
 	print(f'Video Width: {cap.get(cv2.CAP_PROP_FRAME_WIDTH)} , Video Height: {cap.get(cv2.CAP_PROP_FRAME_HEIGHT)}, FPS: {cap.get(cv2.CAP_PROP_FPS)}\n')
- 
+	
 	if save_video == True:
 		fourcc = cv2.VideoWriter_fourcc('M','J','P','G')
 		video_output = cv2.VideoWriter('demo.avi',  fourcc, 30, (int(cap.get(3)),int(cap.get(4)))) 
@@ -115,6 +112,8 @@ def run(estimation_model: str, tracker_type: str,
 	prev_data = {} # dictionary to store prev frame data for determining action
 	fall_detected, fall_conf = False, 0
 	total_frames = 0
+	warning_frame = 0
+	keep_text = False
 
 	# Continuously capture images from the camera and run inference
 	while cap.isOpened():
@@ -127,7 +126,9 @@ def run(estimation_model: str, tracker_type: str,
 		total_frames += 1
 		num_frame += 1
 		counter += 1
-		# image = cv2.flip(image, 1)
+
+		if is_webcam:
+			image = cv2.flip(image, 1)
 
 		if num_frame >= interval:
 			num_frame = 0
@@ -142,13 +143,23 @@ def run(estimation_model: str, tracker_type: str,
 			if len(list_persons)!=0:
 				curr_time = time.time()
 				pose_detector.update_data(list_persons, prev_data, image, curr_time)
-				fall_detected, fall_conf = fall_detector.fall_detection_v2(prev_data, frame_width=vid_width, frame_height=vid_height)
+				fall_detected, fall_conf = fall_detector.fall_detection(prev_data, frame_width=vid_width, frame_height=vid_height)
 
+		# keep fall detected text for a few more frames
+		if keep_text:
+			warning_frame += 1
+			if warning_frame >= 7:
+				cv2.putText(image, "Fall Detected", (50,50),  cv2.FONT_HERSHEY_PLAIN,3,(0,0,245),3)
+				keep_text = False
+				warning_frame = 0
 
 		# write to frame if fall detected
 		if fall_detected and fall_conf>=0.7:
-			cv2.putText(image, "Fall Detected", (20,30),  cv2.FONT_HERSHEY_PLAIN,2,(0,0,245),3)
-			
+			cv2.putText(image, "Fall Detected", (50,50),  cv2.FONT_HERSHEY_PLAIN,3,(0,0,245),3)
+			keep_text = True
+
+  		
+  
 		# write person state (ie. sitting, standing, lying down) to frame
 		for prev_data_key, prev_data_value in prev_data.copy().items():
 			try:
@@ -168,13 +179,13 @@ def run(estimation_model: str, tracker_type: str,
 			end_time_fps = time.time()
 			fps_track = fps_avg_frame_count / (end_time_fps - start_time_fps)
 			start_time_fps = time.time()
-
 		# Show the FPS
 		fps_text = 'FPS = ' + str(int(fps_track))
 		text_location = (left_margin, row_size)
 		cv2.putText(image, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN,
 					font_size, text_color, font_thickness)
 
+		# save frame to video if save_video is True
 		if save_video:
 			video_output.write(image)
   

@@ -7,7 +7,7 @@ class PoseFallDetector:
         self.debug = debug
         # self.data_buf = {}
     
-    def fall_detection_v2(self, prev_data, frame_width=480, frame_height=480):
+    def fall_detection(self, prev_data, frame_width=480, frame_height=480):
         """ 
         Fall detection algorithm using previous 3 frame data.
         
@@ -46,7 +46,7 @@ class PoseFallDetector:
                 
                 if self.debug and fall_conf>=0.3:
                     print(f'Confidence: {fall_conf}')
-                    print(f'State: {state}')
+                    print(f'State: {state}, {prev_data[key]["state"]}')
                     print(f"Hip Diffs: {max_hip_diff}, Shoulder diffs: {max_shoulder_diff}")
                     print(f'angles: {spine_angles}')
                     print(f'spine: {prev_data[key]["spine_vector"]}')

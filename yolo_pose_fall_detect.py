@@ -71,7 +71,7 @@ def video_inference(vid_source: str, vid_width: int, vid_height: int,
             num_frames_elapsed = 0
             model.yolo_track(prev_data, frame, curr_time)
             # fall_detected, fall_conf = fall_detector.fall_detection(prev_data, frame_width=vid_width, frame_height=vid_height)
-            fall_detected, fall_conf = fall_detector.fall_detection_v2(prev_data, frame_width=vid_width, frame_height=vid_height)
+            fall_detected, fall_conf = fall_detector.fall_detection(prev_data, frame_width=vid_width, frame_height=vid_height)
             
             
         
