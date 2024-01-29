@@ -178,7 +178,10 @@ def update_data(list_persons, prev_data, frame, curr_time, debug = False):
     for person in list_persons:
       if not person:
         continue
-      id = person.id
+      if person.id:
+        id = person.id
+      else:
+        id = 0
       spine_vector, legs_vector, hips, shoulders, state = extract_keypts(person, frame)
       if spine_vector:
         # create new entry if no existing data for person id in prev_data

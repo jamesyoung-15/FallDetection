@@ -132,7 +132,7 @@ def image_inference(img_src, model):
     frame = cv2.resize(frame, (640,640))
     prev_data = {}
     curr_time = 0
-    model.yolo_predict(prev_data, frame, curr_time)
+    model.yolo_track(prev_data, frame, curr_time)
     # write person state (ie. sitting, standing, lying down) to frame
     for prev_data_key, prev_data_value in prev_data.copy().items():
         try:

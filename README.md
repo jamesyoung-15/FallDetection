@@ -71,10 +71,11 @@ For full documentation see [here.](./docs/Documentation.md)
 
 2. Video classification
 
-3.  Image Classification
+3. Image Classification
 
 4. Combine some of the above methods (eg. pose estimate + classification).
 
+In the end I could only implement 1 and 3. 
 
 ## Resources
 - [Yolo Pose](https://docs.ultralytics.com/tasks/pose/)

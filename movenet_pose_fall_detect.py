@@ -124,8 +124,6 @@ def run(estimation_model: str, tracker_type: str,
 			image = cv2.resize(image, (vid_width,vid_height), interpolation=cv2.INTER_AREA)
 		if is_webcam:
 			image = cv2.flip(image, 1)
-		if is_webcam and resize:
-			image = cv2.resize(image, (256,192), interpolation=cv2.INTER_AREA)
   
 		total_frames += 1
 		num_frame += 1
