@@ -120,15 +120,17 @@ def run(estimation_model: str, tracker_type: str,
 		success, image = cap.read()
 		if not success:
 			break
-		if resize:
+		if resize and not is_webcam:
 			image = cv2.resize(image, (vid_width,vid_height), interpolation=cv2.INTER_AREA)
-			
+		if is_webcam:
+			image = cv2.flip(image, 1)
+		if is_webcam and resize:
+			image = cv2.resize(image, (256,192), interpolation=cv2.INTER_AREA)
+  
 		total_frames += 1
 		num_frame += 1
 		counter += 1
 
-		if is_webcam:
-			image = cv2.flip(image, 1)
 
 		if num_frame >= interval:
 			num_frame = 0
@@ -142,7 +144,7 @@ def run(estimation_model: str, tracker_type: str,
 
 			if len(list_persons)!=0:
 				curr_time = time.time()
-				pose_detector.update_data(list_persons, prev_data, image, curr_time)
+				movenet_utils.update_data(list_persons, prev_data, image, curr_time)
 				fall_detected, fall_conf = fall_detector.fall_detection(prev_data, frame_width=vid_width, frame_height=vid_height)
 
 		# keep fall detected text for a few more frames
