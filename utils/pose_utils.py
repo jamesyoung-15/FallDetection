@@ -143,4 +143,4 @@ def determine_state(phi=None, alpha=None, ratio=None, beta=None, theta=None, sho
             return "sitting"
         else:
             return "lying down"
-            # raise Exception("invalid theta angle")
+            # raise Exception("err")

@@ -1,6 +1,13 @@
 # Documentation
 Work documentation.
 
+## List of Useful Datasets
+- [small kaggle dataset w/ 3 classes (sit, stand, fall)](https://www.kaggle.com/datasets/uttejkumarkandagatla/fall-detection-dataset)
+- [Roboflow image dataset w/ 4 classes (fall, sit, stand, walk)](https://universe.roboflow.com/customdataset-lmry5/human-fall-detection-hdkty/dataset/8)
+- [Le2i Fall Videos](https://www.kaggle.com/datasets/tuyenldvn/falldataset-imvia)
+- [Fall videos](https://kuleuven.app.box.com/s/dyo66et36l2lqvl19i9i7p66761sy0s6)
+- [Fall videos](http://www.iro.umontreal.ca/~labimage/Dataset/)
+
 ## Setup
 My project was tested on Linux (Pop-OS 22.04) w/ Python 3.10.12.
 ### Dependencies
@@ -47,7 +54,7 @@ python pose_fall_demo.py --src test-data/videos/fall/fall-1.mp4 --interval 5
 python pose_fall_demo.py --src test-data/videos/fall/fall-1.mp4 --pose_type 1
 ```
 
-- With USB-Camera Example
+- With USB-Camera Example (limiting usb-camera fps if possible)
 
 ``` bash
 python pose_fall_demo.py --src /dev/video0 --pose_type 1 --fps 10
@@ -86,7 +93,15 @@ python image_fall_demo.py --src test-data/videos/fall/fall-1.mp4
 
 
 ## How it works (Pose)
-The files/code are in `Pose_Estimate` and `utils` folder. See `pose_fall_detection.py` and `pose_utils.py` for the heuristic algorithm (probably not best approach just a bunch of random angles between joints and vectors).
+The files/code are in `Pose_Estimate` and `utils` folder. See `pose_fall_detection.py` and `pose_utils.py` for the heuristic algorithm (just a bunch of random angles between joints and vectors).
+
+### State Recognition (Sit, Stand, Lying Down)
+See `pose_utils.py` file. The function `determine_state` shows the implementation. It just uses a bunch of random angles between joints and vectors.
+
+### Fall Detection
+The idea is taken from the project [ambianic](https://github.com/ambianic/fall-detection) which also uses pose detection (PoseNet) and calculates the change in spine vector for determining fall.
+
+See `pose_fall_detection.py`. 3 frames of pose detections and states are stored in a dictionary called `prev_data`. Then we calculate the angles between the spine vector and the change in y-coordinates of the hip and shoulders. The idea is that hip and shoulder y-change means the person's body is dropping and a change in spine vector means the body is most likely falling. The reason to include the hip and shoulder y-change is to avoid situations where a person is bending down to reach something to count as fall, as bending down usually means the hip won't drop down.
 
 ### Comparing Pose Estimation Models
 There are many pose detection models available. Below are some I considered:
@@ -128,6 +143,12 @@ Also the pose models doesn't always detect a person, especially in low-lighting 
 
 Another issue is the heuristic algorithm needs more testing and can sometimes give false positives. Because the algorithm calculates the change in spine vector as well as the hips and shoulder y-coordinate change across 3 frames, this can still sometime detect falls when there isn't. For example, if a person goes from standing to praying on his knees (ie. see Muslim praying), this may detect a fall when there isn't.
 
+As you can imagine, using heuristics isn't the best approach but with the hardware limitation it is difficult to add something like a pose action classification as the pose inference itself is already computationally expensive for the Raspberry PI, and adding another layer of inference can add even more computation expense.
+
+### Improvements
+
+If possible, I would recommend trying to approach the project like this -> [Human-Falling-Detect-Tracks](https://github.com/GajuuzZ/Human-Falling-Detect-Tracks), where on top of pose detection, you add a pose-based action classifier. However, this project cannot run on Raspberry PI (got less than 1 fps).
+
 ## How it works (Image Detection)
 This approach detects 4 actions (falling, sitting, standing, walking). It performs action recognition on single frame (image classification) rather than other approaches like video classification that takes multiple frames. 
 
@@ -135,3 +156,7 @@ I used [this](https://universe.roboflow.com/customdataset-lmry5/human-fall-detec
 
 ### Problems
 This approach detects many false positives (detecting falls when there is nothing). This is most likely due to the small dataset size and/or the dataset used isn't good enough (ie. not diverse enough, etc). 
+
+### Improvements
+- Can use a better dataset (add more images or use another one).
+- Can also use another approach, use video classification instead of image classification (see action recognition using video classfication)
