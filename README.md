@@ -71,3 +71,4 @@ In the end I could only implement 1 and 3.
 - [Tensorflow Lite Pose Tutorial](https://www.tensorflow.org/lite/tutorials/pose_classification)
 - [Movenet Example](https://github.com/Kazuhito00/MoveNet-Python-Example/tree/main)
 - [Example of using Pose to determine posture](https://bozliu.medium.com/dynamic-siting-posture-recognition-and-correction-68ae418fbc77)
+- [Ambianic Fall Detection with Pose and heuristics](https://blog.ambianic.ai/2021/03/25/fall-detection.html)
