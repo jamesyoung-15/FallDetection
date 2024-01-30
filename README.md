@@ -1,7 +1,7 @@
 # Simple Fall Detection
 <!-- Github Repo [here](https://github.com/jamesyoung-15/FallDetection). Quick proto-type project that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera image input. -->
 
-My internship project/mini-prototype at [Intelligent Design Technology Limited](https://intelligentdesign.hk/english/) that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera image input.
+My internship project/mini-prototype at [Intelligent Design Technology Limited](https://intelligentdesign.hk/english/) that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera image input. Demo below uses Yolo V8 Pose with heuristics to determine fall.
 
 <p align="middle">
     <img src="./docs/media/demo-1.gif" width="30%" height="200px"/>

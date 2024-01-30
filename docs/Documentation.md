@@ -96,12 +96,16 @@ python image_fall_demo.py --src test-data/videos/fall/fall-1.mp4
 The files/code are in `Pose_Estimate` and `utils` folder. See `pose_fall_detection.py` and `pose_utils.py` for the heuristic algorithm (just a bunch of random angles between joints and vectors).
 
 ### State Recognition (Sit, Stand, Lying Down)
-See `pose_utils.py` file. The function `determine_state` shows the implementation. It just uses a bunch of random angles between joints and vectors.
+See `pose_utils.py` file. The function `determine_state` shows the implementation. It just uses a bunch of random angles between joints and vectors (eg. spine and leg parallel to ground likely means lying down, etc).
 
 ### Fall Detection
-The idea is taken from the project [ambianic](https://github.com/ambianic/fall-detection) which also uses pose detection (PoseNet) and calculates the change in spine vector for determining fall.
+The idea is taken from the project [ambianic](https://ambianic.ai/) which also uses pose detection (PoseNet) and calculates the change in spine vector for determining fall. See below for basic idea of how they did it:
 
-See `pose_fall_detection.py`. 3 frames of pose detections and states are stored in a dictionary called `prev_data`. Then we calculate the angles between the spine vector and the change in y-coordinates of the hip and shoulders. The idea is that hip and shoulder y-change means the person's body is dropping and a change in spine vector means the body is most likely falling. The reason to include the hip and shoulder y-change is to avoid situations where a person is bending down to reach something to count as fall, as bending down usually means the hip won't drop down.
+![](https://user-images.githubusercontent.com/2234901/112545190-ea89d380-8d85-11eb-8e2c-7a6b104d159e.png)
+
+My implementation is similar, see `pose_fall_detection.py`. There are 3 frames of pose detections and states that are stored in a dictionary called `prev_data`. Then we calculate the angles between the spine vector and the change in y-coordinates of the hip and shoulders. 
+
+The idea is that hip and shoulder y-change means the person's body is dropping and a change in spine vector means the body is most likely falling. The reason to include the hip and shoulder y-change is to avoid situations where a person is bending down to reach something to count as fall, as bending down usually means the hip won't drop down.
 
 ### Comparing Pose Estimation Models
 There are many pose detection models available. Below are some I considered:
@@ -114,49 +118,34 @@ There are many pose detection models available. Below are some I considered:
 I chose to use Yolo Pose and Movenet Pose as they support multi-person detection and also are relatively light-weight (can run on Raspberry PI).
 
 #### Movenet and Yolo Pose Keypoints Mapping
-|Part|ID|
-|-|-|
-|NOSE|           0|
-|LEFT_EYE|       1|
-|RIGHT_EYE|      2|
-|LEFT_EAR|       3|
-|RIGHT_EAR|      4|
-|LEFT_SHOULDER|  5|
-|RIGHT_SHOULDER| 6|
-|LEFT_ELBOW|     7|
-|RIGHT_ELBOW|    8|
-|LEFT_WRIST|     9|
-|RIGHT_WRIST|    10|
-|LEFT_HIP|       11|
-|RIGHT_HIP|      12|
-|LEFT_KNEE|      13|
-|RIGHT_KNEE|     14|
-|LEFT_ANKLE|     15|
-|RIGHT_ANKLE|    16|
-
 ![](./media/images/yolo-pose-keypoints.png)
 
 ### Problems
-The tracking algorithms for giving unique IDs to each person don't always work properly (ie. sometimes single person can be given multiple unique IDs, meaning that the fall won't be detected). Therefore perhaps instead of using multi-person pose model can use single-pose model instead.
+The tracking algorithms for giving unique IDs to each person don't always work properly (ie. sometimes single person can be given multiple unique IDs, meaning that the fall won't be detected). 
+
+This tracking problem exist for both Yolo and Movenet models.Therefore perhaps instead of using multi-person pose model can use single-pose model instead (but this means it may not work when more than one person is in frame).
 
 Also the pose models doesn't always detect a person, especially in low-lighting situations or if a person is far away.
 
-Another issue is the heuristic algorithm needs more testing and can sometimes give false positives. Because the algorithm calculates the change in spine vector as well as the hips and shoulder y-coordinate change across 3 frames, this can still sometime detect falls when there isn't. For example, if a person goes from standing to praying on his knees (ie. see Muslim praying), this may detect a fall when there isn't.
+Another issue is the heuristic algorithm needs more testing and can sometimes give false positives. Because the algorithm calculates the change in spine vector as well as the hips and shoulder y-coordinate change across 3 frames, this can still sometime detect falls when there isn't. For example, if a person goes from standing to praying on his knees (ie. Muslim praying, see `test-data/videos/nofall/nofall-6.mp4`), this may detect a fall when there isn't.
 
-As you can imagine, using heuristics isn't the best approach but with the hardware limitation it is difficult to add something like a pose action classification as the pose inference itself is already computationally expensive for the Raspberry PI, and adding another layer of inference can add even more computation expense.
+As you can imagine, using heuristics isn't the best approach but with the hardware limitation it is difficult to add something like a pose action classification as the pose inference itself is already computationally expensive for the Raspberry PI.
 
 ### Improvements
 
 If possible, I would recommend trying to approach the project like this -> [Human-Falling-Detect-Tracks](https://github.com/GajuuzZ/Human-Falling-Detect-Tracks), where on top of pose detection, you add a pose-based action classifier. However, this project cannot run on Raspberry PI (got less than 1 fps).
 
-## How it works (Image Detection)
+Alternatively use image classificatin (see below) or train a video classification (like [Movinet](https://www.tensorflow.org/hub/tutorials/movinet)) with video dataset.
+
+## How it works (Image Detection Approach)
 This approach detects 4 actions (falling, sitting, standing, walking). It performs action recognition on single frame (image classification) rather than other approaches like video classification that takes multiple frames. 
 
 I used [this](https://universe.roboflow.com/customdataset-lmry5/human-fall-detection-hdkty/dataset/8) image dataset. Used transfer learning starting with Yolo V8's `yolov8n.pt` model. See `image_based` folder for the training script and `image_fall_demo.py` for inference script.
 
 ### Problems
-This approach detects many false positives (detecting falls when there is nothing). This is most likely due to the small dataset size and/or the dataset used isn't good enough (ie. not diverse enough, etc). 
+This approach detects many false positives (detecting falls when there isn't even a person in frame). This is most likely due to the small dataset size and/or the dataset used isn't good enough (ie. not diverse enough, etc). 
 
 ### Improvements
 - Can use a better dataset (add more images or use another one).
+- Better image pre-processing to avoid false detections (eg. only perform classification if person detected)
 - Can also use another approach, use video classification instead of image classification (see action recognition using video classfication)
