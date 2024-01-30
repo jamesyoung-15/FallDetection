@@ -1,9 +1,7 @@
-import cv2
 from ultralytics import YOLO
 from Pose_Estimate.pose_fall_detection import PoseFallDetector
 from Pose_Estimate.yolo_pose.yolo_pose import YoloPoseDetector
 from utils import pose_utils
-import time
 from movenet_pose_fall_detect import run as movenet_run
 from yolo_pose_fall_detect import run as yolo_run
 
@@ -30,7 +28,7 @@ def main():
     # load model
     if pose_model==1:
         print("Using Movenet Multipose Lightning")
-        movenet_run(estimation_model='models/tflite/movenet_multipose.tflite', tracker_type="keypoint",
+        movenet_run(estimation_model='models/tflite/movenet_multipose.tflite', tracker_type="bounding_box",
                     media_src=media_source, vid_width=vid_width, vid_height=vid_height, delay=delay, fps=fps, 
                     save_video=save_video, benchmark=benchmark, resize=resize, debug=debug, interval=interval)
     elif pose_model==2:

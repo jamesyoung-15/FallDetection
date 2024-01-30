@@ -66,7 +66,8 @@ class PoseFallDetector:
                     
                 elif fall_conf<.7 and fall_conf>.5:
                     fall_detected = True
-                    print(f'\nMedium/Low Probability of Person {key} Fall Detected.')
+                    if self.debug:
+                        print(f'\nMedium/Low Probability of Person {key} Fall Detected.')
         
         return fall_detected, fall_conf
     

@@ -1,4 +1,6 @@
 # Simple Fall Detection
+<!-- Github Repo [here](https://github.com/jamesyoung-15/FallDetection). Quick proto-type project that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera image input. -->
+
 My internship project/mini-prototype at [Intelligent Design Technology Limited](https://intelligentdesign.hk/english/) that aims to detect in real-time whether a person is falling, sitting, standing, or walking using only a camera image input.
 
 <p align="middle">
@@ -8,7 +10,7 @@ My internship project/mini-prototype at [Intelligent Design Technology Limited](
 </p>
 
 ## About
-This project is done using pose estimation and basic heuristics. This project is designed for an elderly home monitoring system that uses Raspberry PI. Tested with both Yolo V8 pose and Movenet pose models.
+This project has two implementations. The first implementatnion uses pose detection, where it uses pose estimation to extract a person's skeleton and uses heuristics (ie. angle between certain body parts) to determine a person's action. The second implementation uses an image classification to determine the person's state. Both of these approaches are currently not robust enough and need improvements, but can do some basic detection.
 
 
 
@@ -33,36 +35,17 @@ pip install ultralytics
 git clone https://github.com/jamesyoung-15/Fall-Detection
 ```
 
-### Example Run
+### Example Run w/ Pose Approach
 -  Yolo Pose Estimate on Video
 ```bash
-python run.py --src test/data/videos/fall-1.mp4 --interval 7
+python pose_fall_demo.py --src test/data/videos/fall-1.mp4 --interval 5 --pose_type 0
 ```
 
 -  Yolo Pose Estimate on USB-Camera
 ```bash
-python run.py --src /dev/video0 --interval 7 --width 640 --height 480
+python run.py --src /dev/video0 --interval 7 --width 480 --height 320
 ```
 
-- Yolo Pose Estimate on Image
-```bash
-python run.py --src test/data/images/lie-down-1.mp4 --type 1
-```
-
-Command-Line Options:
-``` bash
-options:
-  -h, --help                    show this help message and exit
-  --src SRC                     Video file location (eg. ./test-data/videos/fall-1.mp4)
-  --show SHOW                   Whether to show camera to screen, 0 to hide 1 to show.
-  --width WIDTH                 Input video width. (eg. 480)
-  --height HEIGHT               Input video height (eg. 480)
-  --conf_score CONF_SCORE       Confidence score threshold (eg. 0.7)
-  --interval INTERVAL           Interval in seconds to run inference (eg. 2)
-  --manual_frame MANUAL_FRAME   Set this to 1 if you want to press 'n' key to advance each video frame.
-  --type TYPE                   Specifies whether input is image or video (0 for video 1 for image). Default is video (0).
-  --debug DEBUG                 Whether to print some debug info. Default is 0 (no debug info), 1 means print debug info.
-```
 
 ## Documentation
 For full documentation see [here.](./docs/Documentation.md)

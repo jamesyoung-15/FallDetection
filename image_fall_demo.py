@@ -10,10 +10,19 @@ class_dict = {0: 'falling', 1: 'sitting', 2:'standing', 3:'walking'}
 parser = argparse.ArgumentParser()
 parser.add_argument("--src", type=str, default='0', help="Video file location (eg. ./video.mp4)")
 parser.add_argument("--interval", type=int, default=5, help="Frame interval between inference")
+parser.add_argument("--delay", type=int, default=1, help="CV2 show waitkey delay between frames. Default is 1, change to higher if fps is too high")
+parser.add_argument("--resize", type=int, default=0, help="Whether to resize image or not. Default 0 means no resize, 1 is resize")
+parser.add_argument("--width", type=int, default=640, help="Resize video width. (eg. 640)")
+parser.add_argument("--height", type=int, default=480, help="Resize video height (eg. 480)")
+# can always add more args here
 args = parser.parse_args()
 
+delay = args.delay
 vid_source = args.src
 interval = args.interval
+resize = bool(args.resize)
+resize_width = args.width
+resize_height = args.height
 
 # load Yolo model
 model_path = "./models/yolo-weights/yolov8-fall.pt"
@@ -32,7 +41,9 @@ while cap.isOpened():
     
     frame_counter += 1
     
-    image = cv2.resize(image, (480,320))
+    # Optional: resize frame (can increase fps if downsize resolution at cost of accuracy)
+    if resize:
+        image = cv2.resize(image, (resize_width,resize_height))
     
     # inference
     if frame_counter >= interval:
@@ -40,8 +51,10 @@ while cap.isOpened():
         results = model.predict(image, conf=0.5, verbose=False)
         # extract class from results
         for result in results:
+            # draw results to image
             image = result.plot()
             for c in result.boxes.cls:
+                # here we can do something with the class
                 state = class_dict[int(c)]
                 print(state)
                 if state == 'falling':
@@ -55,7 +68,8 @@ while cap.isOpened():
     
     # display    
     cv2.imshow('Yolo Fall Detection', image)
-    if cv2.waitKey(1) == ord('q'):
+    # press q to exit
+    if cv2.waitKey(delay) == ord('q'):
         break
 
 # cleanup

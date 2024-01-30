@@ -14,14 +14,13 @@ def get_args():
     parser.add_argument("--width", type=int, default=640, help="Input video width. (eg. 640)")
     parser.add_argument("--height", type=int, default=480, help="Input video height (eg. 480)")
     parser.add_argument("--conf_score", type=float, default=0.5, help="Confidence score threshold (eg. 0.7)")
-    parser.add_argument("--interval", type=int, default=7, help="Interval in frames to run inference (eg. 2 means inference every 2 frames)")
+    parser.add_argument("--interval", type=int, default=5, help="Interval in frames to run inference (eg. 2 means inference every 2 frames)")
     parser.add_argument("--manual_frame", type=int, default=0, help="Set this to 1 if you want to press 'n' key to advance each video frame.")
     parser.add_argument("--type", type=int, default=0, help="Specifies whether input is image or video (0 for video 1 for image). Default is video (0).")
     parser.add_argument("--debug", type=int, default=0, help="Whether to print some debug info. Default is 0 (no debug info), 1 means print debug info.")
     parser.add_argument("--save_vid", type=int, default=0, help="Whether to save video. Default is 0 (no save), 1 means save video.")
     parser.add_argument("--pose_type", type=int, default=0, help="Specify which pose model to use. 0 for YoloV8Pose (default), \
-                                                                    1 for Movenet Multi Lightning, 2 for Movenet Single Lightning, \
-                                                                        3 for Blazenet (Mediapipe).")
+                                                                    1 for Movenet Multi Lightning.")
     parser.add_argument("--resize_frame", type=int, default=0, help="Whether to resize frame. Default is 0 (no resize), 1 means resize frame.")
     parser.add_argument("--delay", type=int, default=1, help="Delay in ms for cv2.waitkey(delay) in int.")
     parser.add_argument("--fps", type=int, default=24, help="Set FPS for cv2 (only for usb camera).")
